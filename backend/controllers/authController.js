@@ -158,6 +158,7 @@ exports.verifyPrivy = async (req, res) => {
     // Verify the Privy access token
     let privyUser;
     try {
+      console.log('Verifying Privy access token...');
       privyUser = await privy.verifyAuthToken(accessToken);
       console.log('Privy user verified:', {
         id: privyUser.id,
@@ -165,10 +166,16 @@ exports.verifyPrivy = async (req, res) => {
         linkedAccounts: privyUser.linkedAccounts?.map(acc => ({
           type: acc.type,
           email: acc.email || acc.address,
+          address: acc.address,
         })),
       });
     } catch (error) {
       console.error('Privy verification error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        accessTokenLength: accessToken?.length,
+      });
       return res.status(401).json({ error: 'Invalid or expired access token' });
     }
 

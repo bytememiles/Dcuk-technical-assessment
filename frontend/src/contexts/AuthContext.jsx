@@ -44,19 +44,30 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (authenticated && privyUser) {
+        let accessToken = null;
         try {
+          console.log('Privy user authenticated:', {
+            id: privyUser.id,
+            linkedAccounts: privyUser.linkedAccounts,
+          });
+
           // Get Privy access token
-          const accessToken = await getAccessToken();
+          accessToken = await getAccessToken();
 
           if (!accessToken) {
             console.error('No access token received from Privy');
+            console.log('Privy user object:', privyUser);
             return;
           }
+
+          console.log('Got Privy access token, verifying with backend...');
 
           // Verify with backend and get JWT
           const response = await axios.post('/api/auth/privy/verify', {
             accessToken,
           });
+
+          console.log('Backend verification successful:', response.data);
 
           const { token: jwtToken, user: userData } = response.data;
           setToken(jwtToken);
@@ -69,9 +80,10 @@ export const AuthProvider = ({ children }) => {
             message: error.message,
             response: error.response?.data,
             status: error.response?.status,
+            accessToken: accessToken ? 'Present' : 'Missing',
           });
-          // If verification fails, logout from Privy
-          privyLogout();
+          // Don't logout immediately - might be a temporary network issue
+          // privyLogout();
         }
       } else {
         // Not authenticated, clear user state
