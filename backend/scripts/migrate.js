@@ -23,6 +23,10 @@ const migrate = async () => {
 
     // User indexes
     await User.collection.createIndex({ email: 1 }, { unique: true });
+    await User.collection.createIndex(
+      { privy_user_id: 1 },
+      { unique: true, sparse: true }
+    );
     console.log('✓ User indexes created');
 
     // NFT indexes

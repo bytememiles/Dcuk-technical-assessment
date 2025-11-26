@@ -1,89 +1,60 @@
 /**
- * Login Page
+ * Login Page - Using Privy SSO
  */
 
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { usePrivy } from '@privy-io/react-auth';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { login, ready } = usePrivy();
+  const { isAuthenticated } = useAuth();
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    navigate('/');
+    return null;
+  }
 
-    const result = await login(email, password);
-    setLoading(false);
-
-    if (result.success) {
-      navigate('/');
-    } else {
-      setError(result.error || 'Login failed');
+  const handleLogin = async () => {
+    try {
+      await login();
+    } catch (error) {
+      console.error('Login error:', error);
     }
   };
+
+  if (!ready) {
+    return (
+      <div className="max-w-md mx-auto">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto">
       <h1 className="text-3xl font-bold mb-8 text-center">Login</h1>
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white rounded-lg shadow-md p-6"
-      >
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Email
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-          />
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Password
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-          />
-        </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <p className="text-gray-600 mb-6 text-center">
+          Sign in with your email or Google account
+        </p>
 
         <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+          onClick={handleLogin}
+          className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
         >
-          {loading ? 'Logging in...' : 'Login'}
+          Sign In with Privy
         </button>
 
-        <p className="mt-4 text-center text-gray-600">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-purple-600 hover:underline">
-            Register
-          </Link>
+        <p className="mt-4 text-center text-sm text-gray-500">
+          By signing in, you agree to our terms of service
         </p>
-      </form>
+      </div>
     </div>
   );
 };

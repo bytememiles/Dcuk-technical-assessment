@@ -1,130 +1,62 @@
 /**
- * Register Page
+ * Register Page - Using Privy SSO
+ * Registration is handled through Privy login
  */
 
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { usePrivy } from '@privy-io/react-auth';
 import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [walletAddress, setWalletAddress] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { login, ready } = usePrivy();
+  const { isAuthenticated } = useAuth();
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setError('');
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    navigate('/');
+    return null;
+  }
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    setLoading(true);
-    const result = await register(email, password, walletAddress || null);
-    setLoading(false);
-
-    if (result.success) {
-      navigate('/');
-    } else {
-      setError(result.error || 'Registration failed');
+  const handleSignUp = async () => {
+    try {
+      await login();
+    } catch (error) {
+      console.error('Sign up error:', error);
     }
   };
 
+  if (!ready) {
+    return (
+      <div className="max-w-md mx-auto">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-bold mb-8 text-center">Register</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center">Create Account</h1>
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white rounded-lg shadow-md p-6"
-      >
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Email
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Password
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Confirm Password
-          </label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-          />
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Wallet Address (Optional)
-          </label>
-          <input
-            type="text"
-            value={walletAddress}
-            onChange={e => setWalletAddress(e.target.value)}
-            placeholder="0x..."
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            You can connect your wallet later
-          </p>
-        </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <p className="text-gray-600 mb-6 text-center">
+          Create an account using your email or Google account. Your account
+          will be created automatically when you sign in for the first time.
+        </p>
 
         <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+          onClick={handleSignUp}
+          className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
         >
-          {loading ? 'Registering...' : 'Register'}
+          Sign Up with Privy
         </button>
 
-        <p className="mt-4 text-center text-gray-600">
-          Already have an account?{' '}
-          <Link to="/login" className="text-purple-600 hover:underline">
-            Login
-          </Link>
+        <p className="mt-4 text-center text-sm text-gray-500">
+          By signing up, you agree to our terms of service
         </p>
-      </form>
+      </div>
     </div>
   );
 };

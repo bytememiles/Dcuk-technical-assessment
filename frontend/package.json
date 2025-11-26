@@ -4,6 +4,7 @@
   "description": "NFT E-Commerce Platform - Frontend",
   "private": true,
   "dependencies": {
+    "@privy-io/react-auth": "^2.8.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",

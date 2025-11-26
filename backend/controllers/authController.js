@@ -5,7 +5,22 @@
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { PrivyClient } = require('@privy-io/server-auth');
 const User = require('../models/User');
+
+// Initialize Privy client
+let privy;
+try {
+  privy = new PrivyClient(
+    process.env.PRIVY_APP_ID,
+    process.env.PRIVY_APP_SECRET
+  );
+} catch (error) {
+  console.error('Failed to initialize Privy client:', error);
+  console.warn(
+    'Privy authentication will not work without PRIVY_APP_ID and PRIVY_APP_SECRET'
+  );
+}
 
 /**
  * Register a new user
@@ -119,5 +134,111 @@ exports.getMe = async (req, res) => {
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Failed to get user' });
+  }
+};
+
+/**
+ * Verify Privy access token and create/update user
+ */
+exports.verifyPrivy = async (req, res) => {
+  try {
+    if (!privy) {
+      return res.status(500).json({
+        error:
+          'Privy is not configured. Please set PRIVY_APP_ID and PRIVY_APP_SECRET',
+      });
+    }
+
+    const { accessToken } = req.body;
+
+    if (!accessToken) {
+      return res.status(400).json({ error: 'Access token required' });
+    }
+
+    // Verify the Privy access token
+    let privyUser;
+    try {
+      privyUser = await privy.verifyAuthToken(accessToken);
+    } catch (error) {
+      console.error('Privy verification error:', error);
+      return res.status(401).json({ error: 'Invalid or expired access token' });
+    }
+
+    // Extract user information from Privy
+    const privyUserId = privyUser.id;
+    const email = privyUser.email?.address || null;
+    const linkedAccounts = privyUser.linkedAccounts || [];
+
+    // Determine auth method
+    let authMethod = 'privy_email';
+    const googleAccount = linkedAccounts.find(
+      acc => acc.type === 'google_oauth'
+    );
+    const walletAccount = linkedAccounts.find(acc => acc.type === 'wallet');
+
+    if (googleAccount) {
+      authMethod = 'privy_google';
+    } else if (walletAccount) {
+      authMethod = 'privy_wallet';
+    }
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ error: 'Email is required for authentication' });
+    }
+
+    // Find or create user
+    let user = await User.findOne({ privy_user_id: privyUserId });
+
+    if (!user) {
+      // Check if user exists with same email
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        // Update existing user with Privy info
+        existingUser.privy_user_id = privyUserId;
+        existingUser.auth_method = authMethod;
+        user = await existingUser.save();
+      } else {
+        // Create new user
+        user = await User.create({
+          email,
+          privy_user_id: privyUserId,
+          auth_method: authMethod,
+          password_hash: null, // No password for Privy users
+        });
+      }
+    } else {
+      // Update auth method if changed
+      if (user.auth_method !== authMethod) {
+        user.auth_method = authMethod;
+        await user.save();
+      }
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: user._id.toString(),
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        walletAddress: user.wallet_address,
+        authMethod: user.auth_method,
+      },
+    });
+  } catch (error) {
+    console.error('Privy verification error:', error);
+    res.status(500).json({ error: 'Authentication failed' });
   }
 };
