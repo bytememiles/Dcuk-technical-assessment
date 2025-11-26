@@ -3,8 +3,10 @@
  */
 
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { usePrivy, useLoginWithOAuth } from '@privy-io/react-auth';
 import { useAuth } from '../contexts/AuthContext';
+import BackButton from '../components/BackButton';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,7 +17,7 @@ const Login = () => {
     },
     onError: error => {
       console.error('OAuth login error:', error);
-      alert(`OAuth login failed: ${error.message || 'Unknown error'}`);
+      toast.error(`OAuth login failed: ${error.message || 'Unknown error'}`);
     },
   });
   const { isAuthenticated } = useAuth();
@@ -33,7 +35,7 @@ const Login = () => {
       await login();
     } catch (error) {
       console.error('Email login error:', error);
-      alert(
+      toast.error(
         `Login error: ${error.message || 'Unknown error'}. Please check the browser console for details.`
       );
     }
@@ -46,7 +48,7 @@ const Login = () => {
       await initOAuth({ provider: 'google' });
     } catch (error) {
       console.error('Google OAuth error:', error);
-      alert(
+      toast.error(
         `Google login error: ${error.message || 'Unknown error'}. Please check the browser console for details.`
       );
     }
@@ -66,6 +68,7 @@ const Login = () => {
 
   return (
     <div className="max-w-md mx-auto">
+      <BackButton defaultPath="/" className="mb-6" />
       <h1 className="text-3xl font-bold mb-8 text-center">Login</h1>
 
       <div className="bg-white rounded-lg shadow-md p-6">

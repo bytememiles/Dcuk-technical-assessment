@@ -10,6 +10,8 @@ const {
   getNFTById,
   createNFT,
   searchNFTs,
+  verifyOwnership,
+  getRelatedNFTs,
 } = require('../controllers/nftController');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
@@ -56,6 +58,12 @@ router.get('/search', searchNFTs);
 
 // GET /api/nfts/:id - Get NFT details
 router.get('/:id', getNFTById);
+
+// GET /api/nfts/:id/related - Get related NFTs
+router.get('/:id/related', getRelatedNFTs);
+
+// POST /api/nfts/:id/verify-ownership - Verify NFT ownership
+router.post('/:id/verify-ownership', authenticateToken, verifyOwnership);
 
 // POST /api/nfts - Create NFT listing (admin only)
 router.post('/', authenticateToken, requireAdmin, createNFT);

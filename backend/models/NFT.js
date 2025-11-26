@@ -36,6 +36,22 @@ const nftSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    verified_owners: [
+      {
+        address: {
+          type: String,
+          required: true,
+        },
+        verified_at: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    verification_timestamp: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

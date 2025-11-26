@@ -4,8 +4,10 @@
  */
 
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { usePrivy, useLoginWithOAuth } from '@privy-io/react-auth';
 import { useAuth } from '../contexts/AuthContext';
+import BackButton from '../components/BackButton';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -16,7 +18,7 @@ const Register = () => {
     },
     onError: error => {
       console.error('OAuth sign up error:', error);
-      alert(`OAuth sign up failed: ${error.message || 'Unknown error'}`);
+      toast.error(`OAuth sign up failed: ${error.message || 'Unknown error'}`);
     },
   });
   const { isAuthenticated } = useAuth();
@@ -34,7 +36,7 @@ const Register = () => {
       await login();
     } catch (error) {
       console.error('Email sign up error:', error);
-      alert(
+      toast.error(
         `Sign up error: ${error.message || 'Unknown error'}. Please check the browser console for details.`
       );
     }
@@ -47,7 +49,7 @@ const Register = () => {
       await initOAuth({ provider: 'google' });
     } catch (error) {
       console.error('Google OAuth sign up error:', error);
-      alert(
+      toast.error(
         `Google sign up error: ${error.message || 'Unknown error'}. Please check the browser console for details.`
       );
     }
@@ -67,6 +69,7 @@ const Register = () => {
 
   return (
     <div className="max-w-md mx-auto">
+      <BackButton defaultPath="/" className="mb-6" />
       <h1 className="text-3xl font-bold mb-8 text-center">Create Account</h1>
 
       <div className="bg-white rounded-lg shadow-md p-6">

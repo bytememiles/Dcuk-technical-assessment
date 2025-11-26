@@ -4,10 +4,12 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useCart } from '../contexts/CartContext';
 import { useWeb3 } from '../contexts/Web3Context';
 import { useAuth } from '../contexts/AuthContext';
+import BackButton from '../components/BackButton';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -28,7 +30,7 @@ const Checkout = () => {
     if (!isConnected) {
       const result = await connectWallet();
       if (!result.success) {
-        alert('Failed to connect wallet');
+        toast.error('Failed to connect wallet');
         return;
       }
     }
@@ -39,15 +41,15 @@ const Checkout = () => {
 
     if (result.verified) {
       setVerified(true);
-      alert('Wallet ownership verified!');
+      toast.success('Wallet ownership verified!');
     } else {
-      alert(result.error || 'Verification failed');
+      toast.error(result.error || 'Verification failed');
     }
   };
 
   const handlePlaceOrder = async () => {
     if (!verified) {
-      alert('Please verify wallet ownership first');
+      toast.error('Please verify wallet ownership first');
       return;
     }
 
@@ -58,10 +60,11 @@ const Checkout = () => {
       });
 
       await clearCart();
+      toast.success('Order placed successfully!');
       navigate(`/orders/${response.data.order.id}`);
     } catch (error) {
       console.error('Failed to place order:', error);
-      alert(error.response?.data?.error || 'Failed to place order');
+      toast.error(error.response?.data?.error || 'Failed to place order');
     } finally {
       setPlacingOrder(false);
     }
@@ -73,6 +76,7 @@ const Checkout = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
+      <BackButton defaultPath="/cart" className="mb-6" />
       <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">

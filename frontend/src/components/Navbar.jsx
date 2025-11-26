@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWeb3 } from '../contexts/Web3Context';
@@ -11,8 +12,10 @@ import { useWeb3 } from '../contexts/Web3Context';
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { totalItems } = useCart();
-  const { account, connectWallet, isConnected } = useWeb3();
+  const { account, connectWallet, isConnected, disconnect } = useWeb3();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isWalletMenuOpen, setIsWalletMenuOpen] = useState(false);
+  const [copiedAddress, setCopiedAddress] = useState(false);
 
   // Prevent body scroll when drawer is open
   useEffect(() => {
@@ -26,9 +29,45 @@ const Navbar = () => {
     };
   }, [isMenuOpen]);
 
+  // Close wallet menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = event => {
+      if (isWalletMenuOpen && !event.target.closest('.wallet-menu-container')) {
+        setIsWalletMenuOpen(false);
+      }
+    };
+
+    if (isWalletMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isWalletMenuOpen]);
+
   const handleLogout = () => {
     logout();
+    disconnect(); // Disconnect wallet on logout
     setIsMenuOpen(false);
+  };
+
+  const handleDisconnectWallet = () => {
+    disconnect();
+    setIsWalletMenuOpen(false);
+  };
+
+  const handleCopyAddress = async () => {
+    if (!account) return;
+    try {
+      await navigator.clipboard.writeText(account);
+      setCopiedAddress(true);
+      toast.success('Wallet address copied!');
+      setTimeout(() => setCopiedAddress(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy address:', error);
+      toast.error('Failed to copy address');
+    }
   };
 
   const formatAddress = address => {
@@ -45,9 +84,9 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-white shadow-md relative z-40">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-16 relative">
           {/* Logo */}
           <Link
             to="/"
@@ -112,17 +151,91 @@ const Navbar = () => {
               </>
             )}
 
-            {isConnected ? (
-              <span className="text-xs sm:text-sm text-gray-600 bg-green-100 px-2 sm:px-3 py-1 rounded">
-                {formatAddress(account)}
-              </span>
-            ) : (
-              <button
-                onClick={connectWallet}
-                className="bg-blue-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded hover:bg-blue-600 transition-colors text-sm"
-              >
-                Connect Wallet
-              </button>
+            {isAuthenticated && (
+              <>
+                {isConnected ? (
+                  <div className="relative wallet-menu-container z-50">
+                    <button
+                      onClick={() => setIsWalletMenuOpen(!isWalletMenuOpen)}
+                      className="text-xs sm:text-sm text-gray-600 bg-green-100 px-2 sm:px-3 py-1.5 sm:py-2 rounded flex items-center hover:bg-green-200 transition-colors cursor-pointer relative z-10"
+                    >
+                      {formatAddress(account)}
+                      <svg
+                        className="ml-1 w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                    {isWalletMenuOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-[60] overflow-hidden">
+                        <div className="py-1">
+                          <div className="px-4 py-2.5 text-xs text-gray-500 border-b border-gray-200 flex items-center justify-between gap-2">
+                            <span className="break-all word-break break-words flex-1">
+                              {account}
+                            </span>
+                            <button
+                              onClick={handleCopyAddress}
+                              className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors"
+                              title={copiedAddress ? 'Copied!' : 'Copy address'}
+                            >
+                              {copiedAddress ? (
+                                <svg
+                                  className="w-4 h-4 text-green-600"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              ) : (
+                                <svg
+                                  className="w-4 h-4 text-gray-400 hover:text-gray-600"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                  />
+                                </svg>
+                              )}
+                            </button>
+                          </div>
+                          <button
+                            onClick={handleDisconnectWallet}
+                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors whitespace-nowrap"
+                          >
+                            Disconnect Wallet
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={connectWallet}
+                    className="bg-blue-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded hover:bg-blue-600 transition-colors text-sm"
+                  >
+                    Connect Wallet
+                  </button>
+                )}
+              </>
             )}
           </div>
 
@@ -277,28 +390,41 @@ const Navbar = () => {
                 </>
               )}
 
-              <div className="border-t border-gray-200 pt-4 mt-4">
-                {isConnected ? (
-                  <div className="px-3 py-2">
-                    <p className="text-xs text-gray-500 mb-2">
-                      Wallet Connected
-                    </p>
-                    <span className="text-xs text-gray-600 bg-green-100 px-3 py-2 rounded-lg inline-block">
-                      {formatAddress(account)}
-                    </span>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => {
-                      connectWallet();
-                      closeMenu();
-                    }}
-                    className="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                  >
-                    Connect Wallet
-                  </button>
-                )}
-              </div>
+              {isAuthenticated && (
+                <div className="border-t border-gray-200 pt-4 mt-4">
+                  {isConnected ? (
+                    <div className="px-3 py-2">
+                      <p className="text-xs text-gray-500 mb-2">
+                        Wallet Connected
+                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-gray-600 bg-green-100 px-3 py-2 rounded-lg flex-1">
+                          {formatAddress(account)}
+                        </span>
+                        <button
+                          onClick={() => {
+                            handleDisconnectWallet();
+                            closeMenu();
+                          }}
+                          className="text-xs text-red-600 hover:text-red-700 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors"
+                        >
+                          Disconnect
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        connectWallet();
+                        closeMenu();
+                      }}
+                      className="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                    >
+                      Connect Wallet
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

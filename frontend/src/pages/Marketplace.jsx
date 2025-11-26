@@ -4,6 +4,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -166,10 +167,9 @@ const Marketplace = () => {
     setAddingToCart(prev => ({ ...prev, [nftId]: false }));
 
     if (result.success) {
-      // Show success feedback (you could use a toast library here)
-      console.log('Added to cart');
+      toast.success('Added to cart!');
     } else {
-      alert(result.error || 'Failed to add to cart');
+      toast.error(result.error || 'Failed to add to cart');
     }
   };
 

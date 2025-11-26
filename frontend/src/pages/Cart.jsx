@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
+import BackButton from '../components/BackButton';
 
 const Cart = () => {
   const { items, loading, removeFromCart, totalPrice } = useCart();
@@ -33,6 +34,7 @@ const Cart = () => {
 
   return (
     <div>
+      <BackButton defaultPath="/marketplace" className="mb-6" />
       <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
 
       <div className="bg-white rounded-lg shadow-md p-6">

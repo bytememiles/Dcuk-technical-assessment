@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import BackButton from '../components/BackButton';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -48,6 +49,7 @@ const Orders = () => {
 
   return (
     <div>
+      <BackButton defaultPath="/marketplace" className="mb-6" />
       <h1 className="text-3xl font-bold mb-8">My Orders</h1>
 
       {orders.length === 0 ? (

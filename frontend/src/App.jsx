@@ -8,8 +8,11 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from 'react-router-dom';
 import { PrivyProvider } from '@privy-io/react-auth';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { Web3Provider } from './contexts/Web3Context';
@@ -23,6 +26,37 @@ import Orders from './pages/Orders';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import PrivateRoute from './components/PrivateRoute';
+
+// Navigation tracker component
+const NavigationTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const currentPath = location.pathname;
+    let history = [];
+
+    try {
+      const stored = sessionStorage.getItem('navigationHistory');
+      if (stored) {
+        history = JSON.parse(stored);
+      }
+    } catch (error) {
+      history = [];
+    }
+
+    // Add current path to history if it's different from the last one
+    if (history.length === 0 || history[history.length - 1] !== currentPath) {
+      history.push(currentPath);
+      // Keep only last 10 paths
+      if (history.length > 10) {
+        history = history.slice(-10);
+      }
+      sessionStorage.setItem('navigationHistory', JSON.stringify(history));
+    }
+  }, [location.pathname]);
+
+  return null;
+};
 
 function App() {
   const privyAppId = import.meta.env.VITE_PRIVY_APP_ID;
@@ -64,6 +98,7 @@ function App() {
       }}
     >
       <Router>
+        <NavigationTracker />
         <AuthProvider>
           <Web3Provider>
             <CartProvider>
@@ -104,6 +139,18 @@ function App() {
                   </Routes>
                 </main>
               </div>
+              <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+              />
             </CartProvider>
           </Web3Provider>
         </AuthProvider>

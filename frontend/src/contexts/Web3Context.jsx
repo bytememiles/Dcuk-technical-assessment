@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { ethers } from 'ethers';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
@@ -25,9 +26,22 @@ export const Web3Provider = ({ children }) => {
       checkConnection();
       setupEventListeners();
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
+
+  // Disconnect wallet when user logs out
+  useEffect(() => {
+    if (!isAuthenticated && account) {
+      disconnect();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, account]);
 
   const checkConnection = async () => {
+    // Only auto-connect if user is authenticated
+    if (!isAuthenticated) {
+      return;
+    }
     try {
       const accounts = await window.ethereum.request({
         method: 'eth_accounts',
@@ -56,7 +70,7 @@ export const Web3Provider = ({ children }) => {
 
   const connectWallet = async () => {
     if (!window.ethereum) {
-      alert('Please install MetaMask!');
+      toast.error('Please install MetaMask!');
       return { success: false, error: 'MetaMask not installed' };
     }
 
