@@ -59,6 +59,27 @@ const NFTDetail = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Go Back Button */}
+      <button
+        onClick={() => navigate('/marketplace')}
+        className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+      >
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+          />
+        </svg>
+        <span className="font-medium">Back to Marketplace</span>
+      </button>
+
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="md:flex">
           <div className="md:w-1/2">

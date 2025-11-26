@@ -1,139 +1,272 @@
 /**
- * Marketplace Page
+ * Marketplace Page - Enhanced with filtering, sorting, and improved UI
  */
 
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
+import MarketplaceFilters from '../components/MarketplaceFilters';
+import NFTCard from '../components/NFTCard';
+import SkeletonCard from '../components/SkeletonCard';
+import Pagination from '../components/Pagination';
+import ErrorMessage from '../components/ErrorMessage';
+import { formatPrice, truncateAddress } from '../utils/formatters';
 
 const Marketplace = () => {
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
   const [nfts, setNfts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState(null);
 
+  // Filter input states (what user types)
+  const [minPriceInput, setMinPriceInput] = useState('');
+  const [maxPriceInput, setMaxPriceInput] = useState('');
+  const [ownerFilterInput, setOwnerFilterInput] = useState('');
+  const [contractFilterInput, setContractFilterInput] = useState('');
+  const [sortByInput, setSortByInput] = useState('date');
+  const [sortOrderInput, setSortOrderInput] = useState('desc');
+
+  // Applied filter states (what's actually used in API calls)
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [ownerFilter, setOwnerFilter] = useState('');
+  const [contractFilter, setContractFilter] = useState('');
+  const [sortBy, setSortBy] = useState('date');
+  const [sortOrder, setSortOrder] = useState('desc');
+
+  const [addingToCart, setAddingToCart] = useState({});
+  const [sortByOpen, setSortByOpen] = useState(false);
+  const [sortOrderOpen, setSortOrderOpen] = useState(false);
+
+  // Use ref to prevent duplicate API calls and cancel in-flight requests
+  const abortControllerRef = useRef(null);
+
+  // Memoize fetchNFTs to prevent unnecessary re-renders
+  const fetchNFTs = useCallback(async () => {
+    // Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '12',
+        sortBy,
+        sortOrder,
+      });
+
+      if (minPrice) params.append('minPrice', minPrice);
+      if (maxPrice) params.append('maxPrice', maxPrice);
+      if (ownerFilter) params.append('owner', ownerFilter);
+      if (contractFilter) params.append('contract', contractFilter);
+
+      const response = await axios.get(`/api/nfts?${params.toString()}`, {
+        signal: abortController.signal,
+      });
+
+      // Only update state if request wasn't cancelled
+      if (!abortController.signal.aborted) {
+        setNfts(response.data.nfts || []);
+        setPagination(response.data.pagination);
+      }
+    } catch (error) {
+      // Don't set error if request was cancelled
+      if (error.name !== 'CanceledError' && !axios.isCancel(error)) {
+        console.error('Failed to fetch NFTs:', error);
+        setError('Failed to load NFTs. Please try again.');
+      }
+    } finally {
+      // Only update loading state if request wasn't cancelled
+      if (!abortController.signal.aborted) {
+        setLoading(false);
+      }
+      // Clear the ref if this was the current request
+      if (abortControllerRef.current === abortController) {
+        abortControllerRef.current = null;
+      }
+    }
+  }, [
+    page,
+    minPrice,
+    maxPrice,
+    ownerFilter,
+    contractFilter,
+    sortBy,
+    sortOrder,
+  ]);
+
+  // Only trigger API call when page or applied filters change
   useEffect(() => {
-    if (searchQuery) {
-      searchNFTs();
-    } else {
-      fetchNFTs();
-    }
-  }, [page, searchQuery]);
+    fetchNFTs();
 
-  const fetchNFTs = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`/api/nfts?page=${page}&limit=12`);
-      setNfts(response.data.nfts || []);
-      setPagination(response.data.pagination);
-    } catch (error) {
-      console.error('Failed to fetch NFTs:', error);
-    } finally {
-      setLoading(false);
-    }
+    // Cleanup: cancel request if component unmounts or dependencies change
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, [fetchNFTs]);
+
+  const handleApplyFilters = () => {
+    // Apply the input values to the actual filter states
+    setMinPrice(minPriceInput);
+    setMaxPrice(maxPriceInput);
+    setOwnerFilter(ownerFilterInput);
+    setContractFilter(contractFilterInput);
+    setSortBy(sortByInput);
+    setSortOrder(sortOrderInput);
+    setPage(1); // Reset to first page when applying filters
   };
 
-  const searchNFTs = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(
-        `/api/nfts/search?q=${encodeURIComponent(searchQuery)}&page=${page}&limit=12`
-      );
-      setNfts(response.data.nfts || []);
-      setPagination(response.data.pagination);
-    } catch (error) {
-      console.error('Search failed:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleClearFilters = () => {
+    // Clear input states
+    setMinPriceInput('');
+    setMaxPriceInput('');
+    setOwnerFilterInput('');
+    setContractFilterInput('');
+    setSortByInput('date');
+    setSortOrderInput('desc');
 
-  const handleSearch = e => {
-    e.preventDefault();
+    // Clear applied filter states - React 18+ batches these automatically
+    setMinPrice('');
+    setMaxPrice('');
+    setOwnerFilter('');
+    setContractFilter('');
+    setSortBy('date');
+    setSortOrder('desc');
     setPage(1);
-    if (searchQuery) {
-      searchNFTs();
+  };
+
+  const handleAddToCart = async (e, nftId) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    setAddingToCart(prev => ({ ...prev, [nftId]: true }));
+    const result = await addToCart(nftId);
+    setAddingToCart(prev => ({ ...prev, [nftId]: false }));
+
+    if (result.success) {
+      // Show success feedback (you could use a toast library here)
+      console.log('Added to cart');
     } else {
-      fetchNFTs();
+      alert(result.error || 'Failed to add to cart');
     }
   };
 
-  if (loading && nfts.length === 0) {
-    return <div className="text-center py-8">Loading...</div>;
-  }
+  const hasActiveFilters =
+    minPrice ||
+    maxPrice ||
+    ownerFilter ||
+    contractFilter ||
+    sortBy !== 'date' ||
+    sortOrder !== 'desc';
+
+  const hasFilterInputs =
+    minPriceInput ||
+    maxPriceInput ||
+    ownerFilterInput ||
+    contractFilterInput ||
+    sortByInput !== 'date' ||
+    sortOrderInput !== 'desc';
 
   return (
     <div>
       <h1 className="text-4xl font-bold mb-8">Marketplace</h1>
 
-      <form onSubmit={handleSearch} className="mb-6">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search NFTs..."
-            className="flex-1 px-4 py-2 border rounded-lg"
-          />
-          <button
-            type="submit"
-            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
-          >
-            Search
-          </button>
-        </div>
-      </form>
+      {/* Filters Section */}
+      <MarketplaceFilters
+        minPriceInput={minPriceInput}
+        maxPriceInput={maxPriceInput}
+        ownerFilterInput={ownerFilterInput}
+        contractFilterInput={contractFilterInput}
+        sortByInput={sortByInput}
+        sortOrderInput={sortOrderInput}
+        onMinPriceChange={setMinPriceInput}
+        onMaxPriceChange={setMaxPriceInput}
+        onOwnerFilterChange={setOwnerFilterInput}
+        onContractFilterChange={setContractFilterInput}
+        onSortByChange={setSortByInput}
+        onSortOrderChange={setSortOrderInput}
+        sortByOpen={sortByOpen}
+        sortOrderOpen={sortOrderOpen}
+        onSortByToggle={setSortByOpen}
+        onSortOrderToggle={setSortOrderOpen}
+        onApplyFilters={handleApplyFilters}
+        onClearFilters={handleClearFilters}
+        hasActiveFilters={hasActiveFilters}
+        hasFilterInputs={hasFilterInputs}
+        loading={loading}
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {nfts.map(nft => (
-          <Link
-            key={nft.id}
-            to={`/nft/${nft.id}`}
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
-          >
-            {nft.image_url && (
-              <img
-                src={nft.image_url}
-                alt={nft.name}
-                className="w-full h-64 object-cover"
+      {/* Error State */}
+      <ErrorMessage message={error} onRetry={fetchNFTs} />
+
+      {/* Loading State */}
+      {loading && nfts.length === 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[...Array(8)].map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* NFT Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {nfts.map(nft => (
+              <NFTCard
+                key={nft._id || nft.id}
+                nft={nft}
+                onAddToCart={handleAddToCart}
+                isAddingToCart={addingToCart[nft._id || nft.id]}
+                formatPrice={formatPrice}
+                truncateAddress={truncateAddress}
               />
-            )}
-            <div className="p-4">
-              <h3 className="font-semibold text-lg mb-2">{nft.name}</h3>
-              <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-                {nft.description}
-              </p>
-              <p className="text-purple-600 font-bold">{nft.price} ETH</p>
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {nfts.length === 0 && !loading && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg mb-4">No NFTs found</p>
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearFilters}
+                  className="text-purple-600 hover:text-purple-700 underline"
+                >
+                  Clear filters to see all NFTs
+                </button>
+              )}
             </div>
-          </Link>
-        ))}
-      </div>
+          )}
 
-      {nfts.length === 0 && !loading && (
-        <div className="text-center py-8 text-gray-500">No NFTs found</div>
-      )}
-
-      {pagination && pagination.totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-8">
-          <button
-            onClick={() => setPage(page - 1)}
-            disabled={page === 1}
-            className="px-4 py-2 border rounded disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="px-4 py-2">
-            Page {page} of {pagination.totalPages}
-          </span>
-          <button
-            onClick={() => setPage(page + 1)}
-            disabled={page === pagination.totalPages}
-            className="px-4 py-2 border rounded disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
+          {/* Pagination */}
+          <Pagination
+            page={page}
+            totalPages={pagination?.totalPages}
+            onPageChange={setPage}
+            loading={loading}
+          />
+        </>
       )}
     </div>
   );
