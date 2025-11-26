@@ -38,7 +38,7 @@ const Home = () => {
 
       <h2 className="text-2xl font-semibold mb-4">Featured NFTs</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {featuredNFTs.map((nft) => (
+        {featuredNFTs.map(nft => (
           <Link
             key={nft.id}
             to={`/nft/${nft.id}`}
@@ -56,9 +56,7 @@ const Home = () => {
               <p className="text-gray-600 text-sm mb-2 line-clamp-2">
                 {nft.description}
               </p>
-              <p className="text-purple-600 font-bold">
-                {nft.price} ETH
-              </p>
+              <p className="text-purple-600 font-bold">{nft.price} ETH</p>
             </div>
           </Link>
         ))}
@@ -74,4 +72,3 @@ const Home = () => {
 };
 
 export default Home;
-

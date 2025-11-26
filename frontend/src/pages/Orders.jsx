@@ -25,11 +25,11 @@ const Orders = () => {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = dateString => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = status => {
     switch (status) {
       case 'completed':
         return 'text-green-600';
@@ -59,7 +59,7 @@ const Orders = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {orders.map((order) => (
+          {orders.map(order => (
             <Link
               key={order.id}
               to={`/orders/${order.id}`}
@@ -76,7 +76,9 @@ const Orders = () => {
                   <p className="text-xl font-bold text-purple-600">
                     {parseFloat(order.total_amount).toFixed(4)} ETH
                   </p>
-                  <p className={`text-sm font-semibold ${getStatusColor(order.status)}`}>
+                  <p
+                    className={`text-sm font-semibold ${getStatusColor(order.status)}`}
+                  >
                     {order.status.toUpperCase()}
                   </p>
                 </div>
@@ -90,4 +92,3 @@ const Orders = () => {
 };
 
 export default Orders;
-

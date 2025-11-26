@@ -4,7 +4,11 @@
 
 const express = require('express');
 const router = express.Router();
-const { createOrder, getOrders, getOrderById } = require('../controllers/orderController');
+const {
+  createOrder,
+  getOrders,
+  getOrderById,
+} = require('../controllers/orderController');
 const { authenticateToken } = require('../middleware/auth');
 
 // POST /api/orders - Create order from cart

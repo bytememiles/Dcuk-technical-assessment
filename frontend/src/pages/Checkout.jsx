@@ -54,7 +54,7 @@ const Checkout = () => {
     setPlacingOrder(true);
     try {
       const response = await axios.post('/api/orders', {
-        transaction_hash: null // In real app, this would come from blockchain transaction
+        transaction_hash: null, // In real app, this would come from blockchain transaction
       });
 
       await clearCart();
@@ -77,10 +77,14 @@ const Checkout = () => {
 
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-        {items.map((item) => (
+        {items.map(item => (
           <div key={item.id} className="flex justify-between mb-2">
-            <span>{item.name} x{item.quantity}</span>
-            <span>{(parseFloat(item.price) * item.quantity).toFixed(4)} ETH</span>
+            <span>
+              {item.name} x{item.quantity}
+            </span>
+            <span>
+              {(parseFloat(item.price) * item.quantity).toFixed(4)} ETH
+            </span>
           </div>
         ))}
         <div className="border-t pt-4 mt-4">
@@ -139,4 +143,3 @@ const Checkout = () => {
 };
 
 export default Checkout;
-

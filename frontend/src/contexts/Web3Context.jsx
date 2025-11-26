@@ -29,7 +29,9 @@ export const Web3Provider = ({ children }) => {
 
   const checkConnection = async () => {
     try {
-      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      const accounts = await window.ethereum.request({
+        method: 'eth_accounts',
+      });
       if (accounts.length > 0) {
         await connectWallet();
       }
@@ -39,7 +41,7 @@ export const Web3Provider = ({ children }) => {
   };
 
   const setupEventListeners = () => {
-    window.ethereum.on('accountsChanged', (accounts) => {
+    window.ethereum.on('accountsChanged', accounts => {
       if (accounts.length === 0) {
         disconnect();
       } else {
@@ -74,7 +76,7 @@ export const Web3Provider = ({ children }) => {
       console.error('Error connecting wallet:', error);
       return {
         success: false,
-        error: error.message || 'Failed to connect wallet'
+        error: error.message || 'Failed to connect wallet',
       };
     } finally {
       setIsConnecting(false);
@@ -87,7 +89,7 @@ export const Web3Provider = ({ children }) => {
     setSigner(null);
   };
 
-  const signMessage = async (message) => {
+  const signMessage = async message => {
     if (!signer) {
       throw new Error('Wallet not connected');
     }
@@ -96,7 +98,10 @@ export const Web3Provider = ({ children }) => {
 
   const verifyOwnership = async () => {
     if (!account || !isAuthenticated) {
-      return { success: false, error: 'Wallet not connected or user not authenticated' };
+      return {
+        success: false,
+        error: 'Wallet not connected or user not authenticated',
+      };
     }
 
     try {
@@ -106,7 +111,7 @@ export const Web3Provider = ({ children }) => {
       const response = await axios.post('/api/web3/verify-ownership', {
         walletAddress: account,
         signature,
-        message
+        message,
       });
 
       return response.data;
@@ -114,7 +119,7 @@ export const Web3Provider = ({ children }) => {
       console.error('Verification error:', error);
       return {
         success: false,
-        error: error.response?.data?.error || 'Verification failed'
+        error: error.response?.data?.error || 'Verification failed',
       };
     }
   };
@@ -128,9 +133,8 @@ export const Web3Provider = ({ children }) => {
     connectWallet,
     disconnect,
     signMessage,
-    verifyOwnership
+    verifyOwnership,
   };
 
   return <Web3Context.Provider value={value}>{children}</Web3Context.Provider>;
 };
-

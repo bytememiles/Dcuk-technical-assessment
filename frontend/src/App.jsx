@@ -2,7 +2,12 @@
  * Main App Component
  */
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { Web3Provider } from './contexts/Web3Context';
@@ -68,4 +73,3 @@ function App() {
 }
 
 export default App;
-

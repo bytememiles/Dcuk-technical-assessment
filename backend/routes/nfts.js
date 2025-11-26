@@ -4,7 +4,12 @@
 
 const express = require('express');
 const router = express.Router();
-const { getAllNFTs, getNFTById, createNFT, searchNFTs } = require('../controllers/nftController');
+const {
+  getAllNFTs,
+  getNFTById,
+  createNFT,
+  searchNFTs,
+} = require('../controllers/nftController');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 // GET /api/nfts - List all NFTs with pagination

@@ -1,6 +1,6 @@
 /**
  * Authentication Middleware
- * 
+ *
  * TODO: Implement JWT authentication middleware
  * Verify token and attach user to request object
  */
@@ -42,6 +42,5 @@ const requireAdmin = (req, res, next) => {
 
 module.exports = {
   authenticateToken,
-  requireAdmin
+  requireAdmin,
 };
-

@@ -4,7 +4,12 @@
 
 const express = require('express');
 const router = express.Router();
-const { getCart, addToCart, removeFromCart, clearCart } = require('../controllers/cartController');
+const {
+  getCart,
+  addToCart,
+  removeFromCart,
+  clearCart,
+} = require('../controllers/cartController');
 const { authenticateToken } = require('../middleware/auth');
 
 // GET /api/cart - Get user's cart

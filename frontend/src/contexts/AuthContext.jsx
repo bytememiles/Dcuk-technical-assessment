@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.error || 'Login failed'
+        error: error.response?.data?.error || 'Login failed',
       };
     }
   };
@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post('/api/auth/register', {
         email,
         password,
-        walletAddress
+        walletAddress,
       });
       const { token: newToken, user: userData } = response.data;
       setToken(newToken);
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.error || 'Registration failed'
+        error: error.response?.data?.error || 'Registration failed',
       };
     }
   };
@@ -110,9 +110,8 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-

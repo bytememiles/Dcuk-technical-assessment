@@ -10,7 +10,7 @@ const Cart = () => {
   const { items, loading, removeFromCart, totalPrice } = useCart();
   const [removing, setRemoving] = useState({});
 
-  const handleRemove = async (itemId) => {
+  const handleRemove = async itemId => {
     setRemoving({ ...removing, [itemId]: true });
     await removeFromCart(itemId);
     setRemoving({ ...removing, [itemId]: false });
@@ -24,10 +24,7 @@ const Cart = () => {
     return (
       <div className="text-center py-8">
         <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
-        <Link
-          to="/marketplace"
-          className="text-purple-600 hover:underline"
-        >
+        <Link to="/marketplace" className="text-purple-600 hover:underline">
           Browse Marketplace
         </Link>
       </div>
@@ -39,7 +36,7 @@ const Cart = () => {
       <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
 
       <div className="bg-white rounded-lg shadow-md p-6">
-        {items.map((item) => (
+        {items.map(item => (
           <div
             key={item.id}
             className="flex items-center justify-between border-b pb-4 mb-4 last:border-0"
@@ -54,7 +51,9 @@ const Cart = () => {
               )}
               <div>
                 <h3 className="font-semibold">{item.name}</h3>
-                <p className="text-gray-600 text-sm">Quantity: {item.quantity}</p>
+                <p className="text-gray-600 text-sm">
+                  Quantity: {item.quantity}
+                </p>
                 <p className="text-purple-600 font-bold">
                   {item.price} ETH each
                 </p>
@@ -95,4 +94,3 @@ const Cart = () => {
 };
 
 export default Cart;
-

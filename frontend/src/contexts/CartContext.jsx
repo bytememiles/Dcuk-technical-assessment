@@ -45,12 +45,12 @@ export const CartProvider = ({ children }) => {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.error || 'Failed to add to cart'
+        error: error.response?.data?.error || 'Failed to add to cart',
       };
     }
   };
 
-  const removeFromCart = async (itemId) => {
+  const removeFromCart = async itemId => {
     try {
       await axios.delete(`/api/cart/${itemId}`);
       await fetchCart();
@@ -58,7 +58,7 @@ export const CartProvider = ({ children }) => {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.error || 'Failed to remove from cart'
+        error: error.response?.data?.error || 'Failed to remove from cart',
       };
     }
   };
@@ -71,13 +71,16 @@ export const CartProvider = ({ children }) => {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.error || 'Failed to clear cart'
+        error: error.response?.data?.error || 'Failed to clear cart',
       };
     }
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+  const totalPrice = items.reduce(
+    (sum, item) => sum + parseFloat(item.price) * item.quantity,
+    0
+  );
 
   const value = {
     items,
@@ -87,9 +90,8 @@ export const CartProvider = ({ children }) => {
     addToCart,
     removeFromCart,
     clearCart,
-    fetchCart
+    fetchCart,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
-

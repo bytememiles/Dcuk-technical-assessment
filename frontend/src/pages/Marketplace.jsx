@@ -49,7 +49,7 @@ const Marketplace = () => {
     }
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = e => {
     e.preventDefault();
     setPage(1);
     if (searchQuery) {
@@ -72,7 +72,7 @@ const Marketplace = () => {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search NFTs..."
             className="flex-1 px-4 py-2 border rounded-lg"
           />
@@ -86,7 +86,7 @@ const Marketplace = () => {
       </form>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {nfts.map((nft) => (
+        {nfts.map(nft => (
           <Link
             key={nft.id}
             to={`/nft/${nft.id}`}
@@ -104,18 +104,14 @@ const Marketplace = () => {
               <p className="text-gray-600 text-sm mb-2 line-clamp-2">
                 {nft.description}
               </p>
-              <p className="text-purple-600 font-bold">
-                {nft.price} ETH
-              </p>
+              <p className="text-purple-600 font-bold">{nft.price} ETH</p>
             </div>
           </Link>
         ))}
       </div>
 
       {nfts.length === 0 && !loading && (
-        <div className="text-center py-8 text-gray-500">
-          No NFTs found
-        </div>
+        <div className="text-center py-8 text-gray-500">No NFTs found</div>
       )}
 
       {pagination && pagination.totalPages > 1 && (
@@ -144,4 +140,3 @@ const Marketplace = () => {
 };
 
 export default Marketplace;
-

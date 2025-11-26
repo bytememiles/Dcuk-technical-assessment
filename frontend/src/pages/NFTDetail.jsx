@@ -105,4 +105,3 @@ const NFTDetail = () => {
 };
 
 export default NFTDetail;
-

@@ -16,7 +16,7 @@ const Navbar = () => {
     logout();
   };
 
-  const formatAddress = (address) => {
+  const formatAddress = address => {
     if (!address) return '';
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
@@ -30,13 +30,19 @@ const Navbar = () => {
           </Link>
 
           <div className="flex items-center space-x-4">
-            <Link to="/marketplace" className="text-gray-700 hover:text-purple-600">
+            <Link
+              to="/marketplace"
+              className="text-gray-700 hover:text-purple-600"
+            >
               Marketplace
             </Link>
 
             {isAuthenticated ? (
               <>
-                <Link to="/cart" className="relative text-gray-700 hover:text-purple-600">
+                <Link
+                  to="/cart"
+                  className="relative text-gray-700 hover:text-purple-600"
+                >
                   Cart
                   {totalItems > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -44,7 +50,10 @@ const Navbar = () => {
                     </span>
                   )}
                 </Link>
-                <Link to="/orders" className="text-gray-700 hover:text-purple-600">
+                <Link
+                  to="/orders"
+                  className="text-gray-700 hover:text-purple-600"
+                >
                   Orders
                 </Link>
                 <span className="text-gray-700">{user?.email}</span>
@@ -57,7 +66,10 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/login" className="text-gray-700 hover:text-purple-600">
+                <Link
+                  to="/login"
+                  className="text-gray-700 hover:text-purple-600"
+                >
                   Login
                 </Link>
                 <Link
@@ -89,4 +101,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
