@@ -33,8 +33,8 @@ const MarketplaceFilters = ({
   loading,
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
         {/* Price Range */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -96,9 +96,9 @@ const MarketplaceFilters = ({
       </div>
 
       {/* Sort Controls */}
-      <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-200">
-        <div className="flex items-center gap-3">
-          <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4 pt-4 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <label className="text-sm font-medium text-gray-700 whitespace-nowrap flex-shrink-0">
             Sort by:
           </label>
           <CustomDropdown
@@ -114,8 +114,8 @@ const MarketplaceFilters = ({
           />
         </div>
 
-        <div className="flex items-center gap-3">
-          <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <label className="text-sm font-medium text-gray-700 whitespace-nowrap flex-shrink-0">
             Order:
           </label>
           <CustomDropdown
@@ -130,11 +130,11 @@ const MarketplaceFilters = ({
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
           <button
             onClick={onApplyFilters}
             disabled={loading}
-            className="px-6 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+            className="w-full sm:w-auto px-4 sm:px-6 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
           >
             Apply Filters
           </button>
@@ -142,7 +142,7 @@ const MarketplaceFilters = ({
             <button
               onClick={onClearFilters}
               disabled={loading}
-              className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Clear Filters
             </button>

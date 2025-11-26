@@ -191,7 +191,9 @@ const Marketplace = () => {
 
   return (
     <div>
-      <h1 className="text-4xl font-bold mb-8">Marketplace</h1>
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6 lg:mb-8">
+        Marketplace
+      </h1>
 
       {/* Filters Section */}
       <MarketplaceFilters
@@ -223,7 +225,7 @@ const Marketplace = () => {
 
       {/* Loading State */}
       {loading && nfts.length === 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {[...Array(8)].map((_, i) => (
             <SkeletonCard key={i} />
           ))}
@@ -231,7 +233,7 @@ const Marketplace = () => {
       ) : (
         <>
           {/* NFT Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {nfts.map(nft => (
               <NFTCard
                 key={nft._id || nft.id}
