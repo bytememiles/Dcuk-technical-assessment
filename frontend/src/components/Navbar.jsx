@@ -226,10 +226,10 @@ const Navbar = () => {
                 <>
                   <Link
                     to="/cart"
-                    className="relative text-gray-700 hover:text-purple-600 transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
+                    className="relative text-gray-700 hover:text-purple-600 transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 text-center"
                     onClick={closeMenu}
                   >
-                    <span className="flex items-center justify-between">
+                    <span className="flex items-center justify-center gap-2">
                       Cart
                       {totalItems > 0 && (
                         <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -240,7 +240,7 @@ const Navbar = () => {
                   </Link>
                   <Link
                     to="/orders"
-                    className="text-gray-700 hover:text-purple-600 transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
+                    className="text-gray-700 hover:text-purple-600 transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 text-center"
                     onClick={closeMenu}
                   >
                     Orders
@@ -253,7 +253,7 @@ const Navbar = () => {
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="text-left bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm mt-4"
+                    className="text-center bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm mt-4"
                   >
                     Logout
                   </button>
