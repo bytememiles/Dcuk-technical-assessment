@@ -2,6 +2,7 @@
  * Main App Component
  */
 
+import { useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -26,6 +27,16 @@ import PrivateRoute from './components/PrivateRoute';
 function App() {
   const privyAppId = import.meta.env.VITE_PRIVY_APP_ID;
 
+  // Log configuration for debugging
+  useEffect(() => {
+    if (privyAppId) {
+      console.log('Privy App ID configured:', privyAppId);
+      console.log('Current URL:', window.location.origin);
+    } else {
+      console.warn('Privy App ID is missing! Google OAuth will not work.');
+    }
+  }, [privyAppId]);
+
   if (!privyAppId) {
     console.warn(
       'VITE_PRIVY_APP_ID is not set. Please add it to your .env file.'
@@ -44,6 +55,11 @@ function App() {
         },
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
+        },
+        // Configure OAuth redirect URLs
+        legal: {
+          termsAndConditionsUrl: undefined,
+          privacyPolicyUrl: undefined,
         },
       }}
     >

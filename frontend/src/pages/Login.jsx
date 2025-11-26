@@ -19,9 +19,14 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
+      // This will open Privy's modal with all configured login methods
+      console.log('Opening Privy login modal...');
       await login();
     } catch (error) {
       console.error('Login error:', error);
+      alert(
+        `Login error: ${error.message || 'Unknown error'}. Please check the browser console for details.`
+      );
     }
   };
 
@@ -48,8 +53,12 @@ const Login = () => {
           onClick={handleLogin}
           className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
         >
-          Sign In with Privy
+          Sign In
         </button>
+
+        <p className="mt-3 text-center text-sm text-gray-600">
+          You can sign in with Email or Google
+        </p>
 
         <p className="mt-4 text-center text-sm text-gray-500">
           By signing in, you agree to our terms of service

@@ -159,6 +159,14 @@ exports.verifyPrivy = async (req, res) => {
     let privyUser;
     try {
       privyUser = await privy.verifyAuthToken(accessToken);
+      console.log('Privy user verified:', {
+        id: privyUser.id,
+        email: privyUser.email?.address,
+        linkedAccounts: privyUser.linkedAccounts?.map(acc => ({
+          type: acc.type,
+          email: acc.email || acc.address,
+        })),
+      });
     } catch (error) {
       console.error('Privy verification error:', error);
       return res.status(401).json({ error: 'Invalid or expired access token' });
@@ -166,8 +174,28 @@ exports.verifyPrivy = async (req, res) => {
 
     // Extract user information from Privy
     const privyUserId = privyUser.id;
-    const email = privyUser.email?.address || null;
     const linkedAccounts = privyUser.linkedAccounts || [];
+
+    // Find email from various sources
+    let email = privyUser.email?.address || null;
+
+    // If no email from main object, try to get it from linked accounts
+    if (!email) {
+      const emailAccount = linkedAccounts.find(acc => acc.type === 'email');
+      if (emailAccount) {
+        email = emailAccount.address || emailAccount.email || null;
+      }
+    }
+
+    // Try to get email from Google account if available
+    if (!email) {
+      const googleAccount = linkedAccounts.find(
+        acc => acc.type === 'google_oauth'
+      );
+      if (googleAccount) {
+        email = googleAccount.email || googleAccount.address || null;
+      }
+    }
 
     // Determine auth method
     let authMethod = 'privy_email';
@@ -183,6 +211,13 @@ exports.verifyPrivy = async (req, res) => {
     }
 
     if (!email) {
+      console.error('No email found in Privy user:', {
+        privyUserId,
+        linkedAccounts: linkedAccounts.map(acc => ({
+          type: acc.type,
+          email: acc.email || acc.address,
+        })),
+      });
       return res
         .status(400)
         .json({ error: 'Email is required for authentication' });

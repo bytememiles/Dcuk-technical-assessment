@@ -117,7 +117,52 @@ For local development with MongoDB installed locally, use the same `.env` config
 3. Enable authentication methods:
    - Email (magic link)
    - Google OAuth
-4. Configure redirect URLs:
-   - Development: `http://localhost:3012`
-   - Add your production URL when deploying
-5. Copy your App ID and App Secret to the `.env` file
+4. **CRITICAL - Configure Allowed Origins (Fixes "Origin not allowed" error):**
+   - Go to your Privy app dashboard: https://dashboard.privy.io
+   - Navigate to your app → **"Settings"** → **"Redirect URLs"** or **"Allowed Origins"**
+   - Add the following origins (these are different from redirect URLs):
+     - `http://localhost:3012` (without trailing slash)
+     - `http://localhost:3012/` (with trailing slash - try both)
+   - **Also check "OAuth Settings" or "OAuth Origins":**
+     - Some Privy dashboards have a separate section for OAuth origins
+     - Make sure `http://localhost:3012` is listed there too
+5. **Configure Redirect URLs:**
+   - In "Settings" → "Redirect URLs", add:
+     - `http://localhost:3012`
+     - `http://localhost:3012/`
+     - `http://localhost:3012/login`
+     - `http://localhost:3012/register`
+6. **For Google OAuth specifically:**
+   - Go to "Login Methods" → "Google"
+   - Ensure "Google OAuth" is enabled
+   - Verify all URLs match exactly
+7. Copy your App ID and App Secret to the `.env` file
+
+### Troubleshooting Google OAuth
+
+If the Google button in the Privy modal doesn't work:
+
+1. **Check Browser Console:**
+   - Open browser DevTools (F12)
+   - Check Console tab for errors
+   - Look for CORS, popup blocker, or OAuth errors
+
+2. **Verify Redirect URLs:**
+   - Must match exactly in Privy dashboard
+   - Include protocol (`http://` or `https://`)
+   - Include port number if using non-standard port
+   - Try with and without trailing slash
+
+3. **Check Popup Blockers:**
+   - Disable popup blockers for localhost
+   - Try in incognito mode
+   - Ensure the click is a direct user action
+
+4. **Verify Google OAuth is Enabled:**
+   - In Privy dashboard: Settings → Login Methods
+   - Ensure "Google" is toggled ON
+   - Check that OAuth credentials are configured
+
+5. **Test in Different Browsers:**
+   - Some browsers block OAuth popups more aggressively
+   - Try Chrome, Firefox, or Edge

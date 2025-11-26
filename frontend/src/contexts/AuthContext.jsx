@@ -48,6 +48,11 @@ export const AuthProvider = ({ children }) => {
           // Get Privy access token
           const accessToken = await getAccessToken();
 
+          if (!accessToken) {
+            console.error('No access token received from Privy');
+            return;
+          }
+
           // Verify with backend and get JWT
           const response = await axios.post('/api/auth/privy/verify', {
             accessToken,
@@ -60,6 +65,11 @@ export const AuthProvider = ({ children }) => {
           axios.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
         } catch (error) {
           console.error('Failed to verify Privy token:', error);
+          console.error('Error details:', {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status,
+          });
           // If verification fails, logout from Privy
           privyLogout();
         }

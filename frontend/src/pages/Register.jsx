@@ -20,9 +20,14 @@ const Register = () => {
 
   const handleSignUp = async () => {
     try {
+      // This will open Privy's modal with all configured login methods
+      console.log('Opening Privy sign up modal...');
       await login();
     } catch (error) {
       console.error('Sign up error:', error);
+      alert(
+        `Sign up error: ${error.message || 'Unknown error'}. Please check the browser console for details.`
+      );
     }
   };
 
@@ -50,8 +55,12 @@ const Register = () => {
           onClick={handleSignUp}
           className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
         >
-          Sign Up with Privy
+          Sign Up
         </button>
+
+        <p className="mt-3 text-center text-sm text-gray-600">
+          You can sign up with Email or Google
+        </p>
 
         <p className="mt-4 text-center text-sm text-gray-500">
           By signing up, you agree to our terms of service
