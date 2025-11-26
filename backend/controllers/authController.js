@@ -155,19 +155,15 @@ exports.verifyPrivy = async (req, res) => {
       return res.status(400).json({ error: 'Access token required' });
     }
 
-    // Verify the Privy access token
-    let privyUser;
+    // Verify the Privy access token (returns token claims, not full user)
+    let tokenClaims;
     try {
       console.log('Verifying Privy access token...');
-      privyUser = await privy.verifyAuthToken(accessToken);
-      console.log('Privy user verified:', {
-        id: privyUser.id,
-        email: privyUser.email?.address,
-        linkedAccounts: privyUser.linkedAccounts?.map(acc => ({
-          type: acc.type,
-          email: acc.email || acc.address,
-          address: acc.address,
-        })),
+      tokenClaims = await privy.verifyAuthToken(accessToken);
+      console.log('Token verified, claims:', {
+        userId: tokenClaims.userId,
+        sessionId: tokenClaims.sessionId,
+        appId: tokenClaims.appId,
       });
     } catch (error) {
       console.error('Privy verification error:', error);
@@ -179,37 +175,85 @@ exports.verifyPrivy = async (req, res) => {
       return res.status(401).json({ error: 'Invalid or expired access token' });
     }
 
-    // Extract user information from Privy
-    const privyUserId = privyUser.id;
-    const linkedAccounts = privyUser.linkedAccounts || [];
+    // Get the full user object using userId from token claims
+    const privyUserId = tokenClaims.userId;
+    let privyUser;
+    try {
+      console.log('Fetching full user data for userId:', privyUserId);
+      privyUser = await privy.getUser(privyUserId);
+      console.log('Full user data retrieved:', {
+        id: privyUser.id,
+        linkedAccountsCount:
+          privyUser.linkedAccounts?.length ||
+          privyUser.linked_accounts?.length ||
+          0,
+      });
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+      return res
+        .status(500)
+        .json({ error: 'Failed to fetch user data from Privy' });
+    }
+
+    // Handle both camelCase and snake_case property names
+    const linkedAccounts =
+      privyUser.linkedAccounts || privyUser.linked_accounts || [];
+
+    console.log('Extracting email from Privy user:', {
+      privyUserId,
+      linkedAccountsCount: linkedAccounts.length,
+      linkedAccounts: linkedAccounts.map(acc => ({
+        type: acc.type,
+        address: acc.address,
+        email: acc.email,
+      })),
+    });
 
     // Find email from various sources
-    let email = privyUser.email?.address || null;
+    let email = null;
+
+    // Try main email property (various formats)
+    if (privyUser.email) {
+      email =
+        privyUser.email.address ||
+        privyUser.email.email ||
+        privyUser.email ||
+        null;
+    }
 
     // If no email from main object, try to get it from linked accounts
-    if (!email) {
+    if (!email && linkedAccounts.length > 0) {
       const emailAccount = linkedAccounts.find(acc => acc.type === 'email');
       if (emailAccount) {
         email = emailAccount.address || emailAccount.email || null;
+        console.log('Found email from linked accounts:', email);
       }
     }
 
     // Try to get email from Google account if available
-    if (!email) {
+    if (!email && linkedAccounts.length > 0) {
       const googleAccount = linkedAccounts.find(
-        acc => acc.type === 'google_oauth'
+        acc => acc.type === 'google_oauth' || acc.type === 'google'
       );
       if (googleAccount) {
         email = googleAccount.email || googleAccount.address || null;
+        console.log('Found email from Google account:', email);
       }
     }
 
-    // Determine auth method
+    // Determine auth method and extract wallet address
     let authMethod = 'privy_email';
     const googleAccount = linkedAccounts.find(
       acc => acc.type === 'google_oauth'
     );
     const walletAccount = linkedAccounts.find(acc => acc.type === 'wallet');
+
+    // Extract wallet address if available
+    let walletAddress = null;
+    if (walletAccount) {
+      walletAddress = walletAccount.address || null;
+      console.log('Found wallet address:', walletAddress);
+    }
 
     if (googleAccount) {
       authMethod = 'privy_google';
@@ -220,15 +264,24 @@ exports.verifyPrivy = async (req, res) => {
     if (!email) {
       console.error('No email found in Privy user:', {
         privyUserId,
+        privyUserKeys: Object.keys(privyUser),
+        emailProperty: privyUser.email,
         linkedAccounts: linkedAccounts.map(acc => ({
           type: acc.type,
-          email: acc.email || acc.address,
+          email: acc.email,
+          address: acc.address,
+          allKeys: Object.keys(acc),
         })),
+        fullPrivyUser: JSON.stringify(privyUser, null, 2),
       });
-      return res
-        .status(400)
-        .json({ error: 'Email is required for authentication' });
+      return res.status(400).json({
+        error: 'Email is required for authentication',
+        details:
+          'No email found in Privy user object. Please ensure your account has an email linked.',
+      });
     }
+
+    console.log('Email extracted successfully:', email);
 
     // Find or create user
     let user = await User.findOne({ privy_user_id: privyUserId });
@@ -240,6 +293,10 @@ exports.verifyPrivy = async (req, res) => {
         // Update existing user with Privy info
         existingUser.privy_user_id = privyUserId;
         existingUser.auth_method = authMethod;
+        // Update wallet address if provided and not already set
+        if (walletAddress && !existingUser.wallet_address) {
+          existingUser.wallet_address = walletAddress;
+        }
         user = await existingUser.save();
       } else {
         // Create new user
@@ -247,13 +304,24 @@ exports.verifyPrivy = async (req, res) => {
           email,
           privy_user_id: privyUserId,
           auth_method: authMethod,
+          wallet_address: walletAddress || null,
           password_hash: null, // No password for Privy users
         });
       }
     } else {
       // Update auth method if changed
+      let needsSave = false;
       if (user.auth_method !== authMethod) {
         user.auth_method = authMethod;
+        needsSave = true;
+      }
+      // Update wallet address if provided and different
+      if (walletAddress && user.wallet_address !== walletAddress) {
+        user.wallet_address = walletAddress;
+        needsSave = true;
+      }
+      // Save if any changes were made
+      if (needsSave) {
         await user.save();
       }
     }
