@@ -7,10 +7,14 @@ Create a `.env` file in the `backend/` directory with the following content:
 PORT=5000
 NODE_ENV=development
 
-# MongoDB Connection (Local)
+# MongoDB Connection
+# Option 1: Docker Container (Recommended for development)
 MONGODB_URI=mongodb://localhost:27017/dcuk-assessment
 
-# Alternative: MongoDB Atlas (cloud)
+# Option 2: Local MongoDB Installation
+# MONGODB_URI=mongodb://localhost:27017/dcuk-assessment
+
+# Option 3: MongoDB Atlas (cloud)
 # MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/dcuk-assessment?retryWrites=true&w=majority
 
 # JWT Secret
@@ -31,6 +35,34 @@ PRIVY_APP_SECRET=your_privy_app_secret_here
 
 ## Instructions
 
+### Using Docker (Recommended)
+
+1. Navigate to the `backend/` directory:
+   ```bash
+   cd backend
+   ```
+
+2. Start MongoDB container:
+   ```bash
+   docker compose up -d mongodb
+   ```
+
+3. Verify MongoDB is running:
+   ```bash
+   docker ps
+   ```
+
+4. Create `.env` file in the `backend/` directory with the content above
+5. The connection string `mongodb://localhost:27017/dcuk-assessment` will work with Docker
+
+### Using Local MongoDB
+
+1. Install MongoDB locally
+2. Start MongoDB service
+3. Create `.env` file with the connection string
+
+### Setup Steps
+
 1. Copy the content above
 2. Create a new file named `.env` in the `backend/` directory
 3. Paste the content
@@ -44,7 +76,19 @@ PRIVY_APP_SECRET=your_privy_app_secret_here
 
 ## Quick Setup
 
-For local development with MongoDB installed locally:
+### With Docker
+
+1. Navigate to the `backend/` directory:
+   ```bash
+   cd backend
+   ```
+
+2. Start MongoDB:
+   ```bash
+   docker compose up -d mongodb
+   ```
+
+3. Create `.env` file in `backend/` directory:
 
 ```env
 PORT=5000
@@ -56,6 +100,15 @@ FRONTEND_URL=http://localhost:3012
 PRIVY_APP_ID=your_privy_app_id_here
 PRIVY_APP_SECRET=your_privy_app_secret_here
 ```
+
+4. Stop MongoDB container when done:
+   ```bash
+   docker compose down
+   ```
+
+### With Local MongoDB
+
+For local development with MongoDB installed locally, use the same `.env` configuration above.
 
 ## Privy Setup
 
