@@ -8,6 +8,7 @@ const OrderItem = require('../models/OrderItem');
 const CartItem = require('../models/CartItem');
 const mongoose = require('mongoose');
 const transactionMonitor = require('../services/transactionMonitor');
+const logger = require('../config/logger');
 
 /**
  * Generate unique order number
@@ -122,7 +123,11 @@ exports.createOrder = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Create order error:', error);
+    logger.error('Create order error:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+    });
     res.status(500).json({ error: 'Failed to create order' });
   }
 };
@@ -191,7 +196,11 @@ exports.getOrders = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Get orders error:', error);
+    logger.error('Get orders error:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+    });
     res.status(500).json({ error: 'Failed to fetch orders' });
   }
 };
@@ -239,7 +248,12 @@ exports.getOrderById = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Get order error:', error);
+    logger.error('Get order error:', {
+      message: error.message,
+      stack: error.stack,
+      orderId: req.params.id,
+      userId: req.user?.id,
+    });
     if (error.name === 'CastError') {
       return res.status(404).json({ error: 'Order not found' });
     }
@@ -288,7 +302,12 @@ exports.updateOrderStatus = async (req, res) => {
 
     res.json({ order });
   } catch (error) {
-    console.error('Update order status error:', error);
+    logger.error('Update order status error:', {
+      message: error.message,
+      stack: error.stack,
+      orderId: req.params.id,
+      userId: req.user?.id,
+    });
     if (error.name === 'CastError') {
       return res.status(404).json({ error: 'Order not found' });
     }

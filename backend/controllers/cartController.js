@@ -5,6 +5,7 @@
 
 const CartItem = require('../models/CartItem');
 const NFT = require('../models/NFT');
+const logger = require('../config/logger');
 
 /**
  * Get user's cart
@@ -35,7 +36,11 @@ exports.getCart = async (req, res) => {
 
     res.json({ items: formattedItems });
   } catch (error) {
-    console.error('Get cart error:', error);
+    logger.error('Get cart error:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+    });
     res.status(500).json({ error: 'Failed to fetch cart' });
   }
 };
@@ -78,7 +83,12 @@ exports.addToCart = async (req, res) => {
 
     res.json({ message: 'Item added to cart' });
   } catch (error) {
-    console.error('Add to cart error:', error);
+    logger.error('Add to cart error:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+      nftId: req.body.nft_id,
+    });
     if (error.name === 'CastError') {
       return res.status(404).json({ error: 'NFT not found' });
     }
@@ -102,7 +112,12 @@ exports.removeFromCart = async (req, res) => {
 
     res.json({ message: 'Item removed from cart' });
   } catch (error) {
-    console.error('Remove from cart error:', error);
+    logger.error('Remove from cart error:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+      itemId: req.params.itemId,
+    });
     if (error.name === 'CastError') {
       return res.status(404).json({ error: 'Cart item not found' });
     }
@@ -118,7 +133,11 @@ exports.clearCart = async (req, res) => {
     await CartItem.deleteMany({ user_id: req.user.id });
     res.json({ message: 'Cart cleared' });
   } catch (error) {
-    console.error('Clear cart error:', error);
+    logger.error('Clear cart error:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+    });
     res.status(500).json({ error: 'Failed to clear cart' });
   }
 };

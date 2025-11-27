@@ -14,6 +14,8 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/database');
 const transactionMonitor = require('./services/transactionMonitor');
+const logger = require('./config/logger');
+const requestLogger = require('./middleware/requestLogger');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,7 +26,7 @@ connectDB();
 // Initialize transaction monitor
 if (process.env.WEB3_PROVIDER_URL) {
   transactionMonitor.initialize(process.env.WEB3_PROVIDER_URL);
-  console.log('Transaction monitor initialized');
+  logger.info('Transaction monitor initialized');
 }
 
 // Middleware
@@ -36,6 +38,9 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// HTTP Request Logging
+app.use(requestLogger);
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -58,7 +63,14 @@ app.use('/api/web3', web3Routes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logger.error('Unhandled error:', {
+    message: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    ip: req.ip,
+  });
+
   res.status(err.status || 500).json({
     error: {
       message: err.message || 'Internal server error',
@@ -69,9 +81,17 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use((req, res) => {
+  logger.warn('Route not found:', {
+    url: req.url,
+    method: req.method,
+    ip: req.ip,
+  });
   res.status(404).json({ error: 'Route not found' });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT}`, {
+    environment: process.env.NODE_ENV || 'development',
+    port: PORT,
+  });
 });

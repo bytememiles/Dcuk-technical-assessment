@@ -6,6 +6,7 @@
 const NFT = require('../models/NFT');
 const mongoose = require('mongoose');
 const { ethers } = require('ethers');
+const logger = require('../config/logger');
 
 /**
  * Get all NFTs with pagination, filtering, and sorting
@@ -96,7 +97,11 @@ exports.getAllNFTs = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Get NFTs error:', error);
+    logger.error('Get NFTs error:', {
+      message: error.message,
+      stack: error.stack,
+      query: req.query,
+    });
     res.status(500).json({ error: 'Failed to fetch NFTs' });
   }
 };
@@ -113,7 +118,11 @@ exports.getNFTById = async (req, res) => {
 
     res.json({ nft });
   } catch (error) {
-    console.error('Get NFT error:', error);
+    logger.error('Get NFT error:', {
+      message: error.message,
+      stack: error.stack,
+      nftId: req.params.id,
+    });
     if (error.name === 'CastError') {
       return res.status(404).json({ error: 'NFT not found' });
     }
@@ -152,7 +161,11 @@ exports.createNFT = async (req, res) => {
 
     res.status(201).json({ nft });
   } catch (error) {
-    console.error('Create NFT error:', error);
+    logger.error('Create NFT error:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+    });
     res.status(500).json({ error: 'Failed to create NFT' });
   }
 };
@@ -196,7 +209,11 @@ exports.searchNFTs = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Search NFTs error:', error);
+    logger.error('Search NFTs error:', {
+      message: error.message,
+      stack: error.stack,
+      query: req.query,
+    });
     res.status(500).json({ error: 'Search failed' });
   }
 };
@@ -239,7 +256,11 @@ exports.verifyOwnership = async (req, res) => {
         });
       }
     } catch (error) {
-      console.error('Signature verification error:', error);
+      logger.error('Signature verification error:', {
+        message: error.message,
+        stack: error.stack,
+        nftId: req.params.id,
+      });
       return res.status(400).json({
         verified: false,
         error: 'Invalid signature',
@@ -262,7 +283,13 @@ exports.verifyOwnership = async (req, res) => {
       onChainOwner = await contract.ownerOf(nft.token_id);
       onChainOwner = onChainOwner.toLowerCase();
     } catch (error) {
-      console.error('On-chain ownership check error:', error);
+      logger.error('On-chain ownership check error:', {
+        message: error.message,
+        stack: error.stack,
+        nftId: req.params.id,
+        contractAddress,
+        tokenId,
+      });
       return res.status(500).json({
         verified: false,
         error:
@@ -313,7 +340,11 @@ exports.verifyOwnership = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Verify ownership error:', error);
+    logger.error('Verify ownership error:', {
+      message: error.message,
+      stack: error.stack,
+      nftId: req.params.id,
+    });
     res.status(500).json({
       verified: false,
       error: 'Verification failed',
@@ -364,7 +395,11 @@ exports.getRelatedNFTs = async (req, res) => {
 
     res.json({ relatedNFTs });
   } catch (error) {
-    console.error('Get related NFTs error:', error);
+    logger.error('Get related NFTs error:', {
+      message: error.message,
+      stack: error.stack,
+      nftId: req.params.id,
+    });
     res.status(500).json({ error: 'Failed to fetch related NFTs' });
   }
 };

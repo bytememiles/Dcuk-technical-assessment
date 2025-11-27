@@ -4,6 +4,7 @@
  */
 
 const { ethers } = require('ethers');
+const logger = require('../config/logger');
 const User = require('../models/User');
 
 /**
@@ -42,14 +43,20 @@ exports.verifyOwnership = async (req, res) => {
         });
       }
     } catch (error) {
-      console.error('Signature verification error:', error);
+      logger.error('Signature verification error:', {
+        message: error.message,
+        stack: error.stack,
+      });
       res.status(400).json({
         verified: false,
         error: 'Invalid signature',
       });
     }
   } catch (error) {
-    console.error('Verify ownership error:', error);
+    logger.error('Verify ownership error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     res.status(500).json({ error: 'Verification failed' });
   }
 };

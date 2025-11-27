@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { PrivyClient } = require('@privy-io/server-auth');
 const User = require('../models/User');
+const logger = require('../config/logger');
 
 // Initialize Privy client
 let privy;
@@ -15,9 +16,13 @@ try {
     process.env.PRIVY_APP_ID,
     process.env.PRIVY_APP_SECRET
   );
+  logger.info('Privy client initialized successfully');
 } catch (error) {
-  console.error('Failed to initialize Privy client:', error);
-  console.warn(
+  logger.error('Failed to initialize Privy client:', {
+    message: error.message,
+    stack: error.stack,
+  });
+  logger.warn(
     'Privy authentication will not work without PRIVY_APP_ID and PRIVY_APP_SECRET'
   );
 }
@@ -67,7 +72,11 @@ exports.register = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error('Registration error:', {
+      message: error.message,
+      stack: error.stack,
+      email: req.body.email,
+    });
     if (error.code === 11000) {
       return res.status(400).json({ error: 'User already exists' });
     }
@@ -115,7 +124,11 @@ exports.login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error('Login error:', {
+      message: error.message,
+      stack: error.stack,
+      email: req.body.email,
+    });
     res.status(500).json({ error: 'Login failed' });
   }
 };
@@ -132,7 +145,11 @@ exports.getMe = async (req, res) => {
 
     res.json({ user });
   } catch (error) {
-    console.error('Get user error:', error);
+    logger.error('Get user error:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id,
+    });
     res.status(500).json({ error: 'Failed to get user' });
   }
 };
@@ -158,16 +175,15 @@ exports.verifyPrivy = async (req, res) => {
     // Verify the Privy access token (returns token claims, not full user)
     let tokenClaims;
     try {
-      console.log('Verifying Privy access token...');
+      logger.debug('Verifying Privy access token...');
       tokenClaims = await privy.verifyAuthToken(accessToken);
-      console.log('Token verified, claims:', {
+      logger.debug('Token verified, claims:', {
         userId: tokenClaims.userId,
         sessionId: tokenClaims.sessionId,
         appId: tokenClaims.appId,
       });
     } catch (error) {
-      console.error('Privy verification error:', error);
-      console.error('Error details:', {
+      logger.error('Privy verification error:', {
         message: error.message,
         stack: error.stack,
         accessTokenLength: accessToken?.length,
@@ -179,9 +195,9 @@ exports.verifyPrivy = async (req, res) => {
     const privyUserId = tokenClaims.userId;
     let privyUser;
     try {
-      console.log('Fetching full user data for userId:', privyUserId);
+      logger.debug('Fetching full user data for userId:', { privyUserId });
       privyUser = await privy.getUser(privyUserId);
-      console.log('Full user data retrieved:', {
+      logger.debug('Full user data retrieved:', {
         id: privyUser.id,
         linkedAccountsCount:
           privyUser.linkedAccounts?.length ||
@@ -189,7 +205,11 @@ exports.verifyPrivy = async (req, res) => {
           0,
       });
     } catch (error) {
-      console.error('Failed to fetch user data:', error);
+      logger.error('Failed to fetch user data:', {
+        message: error.message,
+        stack: error.stack,
+        privyUserId,
+      });
       return res
         .status(500)
         .json({ error: 'Failed to fetch user data from Privy' });
@@ -199,7 +219,7 @@ exports.verifyPrivy = async (req, res) => {
     const linkedAccounts =
       privyUser.linkedAccounts || privyUser.linked_accounts || [];
 
-    console.log('Extracting email from Privy user:', {
+    logger.debug('Extracting email from Privy user:', {
       privyUserId,
       linkedAccountsCount: linkedAccounts.length,
       linkedAccounts: linkedAccounts.map(acc => ({
@@ -226,7 +246,7 @@ exports.verifyPrivy = async (req, res) => {
       const emailAccount = linkedAccounts.find(acc => acc.type === 'email');
       if (emailAccount) {
         email = emailAccount.address || emailAccount.email || null;
-        console.log('Found email from linked accounts:', email);
+        logger.debug('Found email from linked accounts:', { email });
       }
     }
 
@@ -237,7 +257,7 @@ exports.verifyPrivy = async (req, res) => {
       );
       if (googleAccount) {
         email = googleAccount.email || googleAccount.address || null;
-        console.log('Found email from Google account:', email);
+        logger.debug('Found email from Google account:', { email });
       }
     }
 
@@ -252,7 +272,7 @@ exports.verifyPrivy = async (req, res) => {
     let walletAddress = null;
     if (walletAccount) {
       walletAddress = walletAccount.address || null;
-      console.log('Found wallet address:', walletAddress);
+      logger.debug('Found wallet address:', { walletAddress });
     }
 
     if (googleAccount) {
@@ -262,7 +282,7 @@ exports.verifyPrivy = async (req, res) => {
     }
 
     if (!email) {
-      console.error('No email found in Privy user:', {
+      logger.error('No email found in Privy user:', {
         privyUserId,
         privyUserKeys: Object.keys(privyUser),
         emailProperty: privyUser.email,
@@ -281,7 +301,7 @@ exports.verifyPrivy = async (req, res) => {
       });
     }
 
-    console.log('Email extracted successfully:', email);
+    logger.debug('Email extracted successfully:', { email });
 
     // Find or create user
     let user = await User.findOne({ privy_user_id: privyUserId });
@@ -348,7 +368,10 @@ exports.verifyPrivy = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Privy verification error:', error);
+    logger.error('Privy verification error:', {
+      message: error.message,
+      stack: error.stack,
+    });
     res.status(500).json({ error: 'Authentication failed' });
   }
 };

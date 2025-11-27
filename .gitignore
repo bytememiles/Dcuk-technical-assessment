@@ -4,3 +4,7 @@ backend/node_modules/
 frontend/node_modules/
 .husky/_/
 docker-compose.override.yml
+
+# Logs
+backend/logs/
+*.log

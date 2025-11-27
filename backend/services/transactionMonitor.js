@@ -5,6 +5,7 @@
 
 const { ethers } = require('ethers');
 const Order = require('../models/Order');
+const logger = require('../config/logger');
 
 class TransactionMonitor {
   constructor() {
@@ -35,19 +36,19 @@ class TransactionMonitor {
    */
   async startMonitoring(orderId, transactionHash) {
     if (!this.provider) {
-      console.error('Transaction monitor: Provider not initialized');
+      logger.error('Transaction monitor: Provider not initialized');
       return;
     }
 
     if (!transactionHash) {
-      console.error('Transaction monitor: No transaction hash provided');
+      logger.error('Transaction monitor: No transaction hash provided');
       return;
     }
 
     // Stop any existing monitoring for this order
     this.stopMonitoring(orderId);
 
-    console.log(
+    logger.info(
       `Starting transaction monitoring for order ${orderId}, tx: ${transactionHash}`
     );
 
@@ -58,7 +59,7 @@ class TransactionMonitor {
 
         if (!receipt) {
           // Transaction not yet mined
-          console.log(`Transaction ${transactionHash} not yet mined`);
+          logger.debug(`Transaction ${transactionHash} not yet mined`);
           return;
         }
 
@@ -66,7 +67,7 @@ class TransactionMonitor {
         if (receipt.status === 1) {
           // Success
           const confirmations = await receipt.confirmations();
-          console.log(
+          logger.info(
             `Transaction ${transactionHash} confirmed ${confirmations} times`
           );
 
@@ -76,7 +77,7 @@ class TransactionMonitor {
               status: 'completed',
               transaction_status: 'confirmed',
             });
-            console.log(`Order ${orderId} marked as completed`);
+            logger.info(`Order ${orderId} marked as completed`);
             this.stopMonitoring(orderId);
           } else {
             // Update to processing while waiting for confirmations
@@ -92,16 +93,16 @@ class TransactionMonitor {
             transaction_status: 'failed',
             failure_reason: 'Transaction reverted on-chain',
           });
-          console.log(
+          logger.warn(
             `Order ${orderId} marked as failed - transaction reverted`
           );
           this.stopMonitoring(orderId);
         }
       } catch (error) {
-        console.error(
-          `Error monitoring transaction ${transactionHash}:`,
-          error
-        );
+        logger.error(`Error monitoring transaction ${transactionHash}:`, {
+          message: error.message,
+          stack: error.stack,
+        });
 
         // Check if transaction exists (might be pending)
         try {
@@ -113,13 +114,16 @@ class TransactionMonitor {
               transaction_status: 'failed',
               failure_reason: 'Transaction not found on blockchain',
             });
-            console.log(
+            logger.warn(
               `Order ${orderId} marked as failed - transaction not found`
             );
             this.stopMonitoring(orderId);
           }
         } catch (txError) {
-          console.error(`Error checking transaction existence:`, txError);
+          logger.error(`Error checking transaction existence:`, {
+            message: txError.message,
+            stack: txError.stack,
+          });
         }
       }
     };
@@ -158,7 +162,7 @@ class TransactionMonitor {
     if (intervalId) {
       clearInterval(intervalId);
       this.monitoringIntervals.delete(orderId.toString());
-      console.log(`Stopped monitoring order ${orderId}`);
+      logger.info(`Stopped monitoring order ${orderId}`);
     }
   }
 
