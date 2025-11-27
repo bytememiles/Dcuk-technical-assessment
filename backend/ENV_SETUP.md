@@ -1,6 +1,17 @@
 # Environment Variables Setup
 
-Create a `.env` file in the `backend/` directory with the following content:
+## Quick Setup
+
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and replace placeholder values with your actual credentials.
+
+## Manual Setup
+
+Alternatively, create a `.env` file in the `backend/` directory with the following content:
 
 ```env
 # Server Configuration
@@ -24,9 +35,13 @@ JWT_EXPIRES_IN=7d
 # CORS
 FRONTEND_URL=http://localhost:3012
 
-# Web3
-RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
-# Or use: https://rpc.sepolia.org (public, rate-limited)
+# Web3 Configuration (optional, for transaction monitoring and NFT verification)
+WEB3_PROVIDER_URL=https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID
+# Alternative: https://rpc.sepolia.org (public, rate-limited)
+# Alternative: https://eth.llamarpc.com (public)
+
+# Ethereum RPC URL (optional, fallback for NFT verification)
+ETH_RPC_URL=https://eth.llamarpc.com
 
 # Privy Configuration (for SSO authentication)
 PRIVY_APP_ID=your_privy_app_id_here
@@ -52,26 +67,39 @@ PRIVY_APP_SECRET=your_privy_app_secret_here
    docker ps
    ```
 
-4. Create `.env` file in the `backend/` directory with the content above
-5. The connection string `mongodb://localhost:27017/dcuk-assessment` will work with Docker
+4. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+5. Edit `.env` and replace placeholder values with your actual credentials
+6. The connection string `mongodb://localhost:27017/dcuk-assessment` will work with Docker
 
 ### Using Local MongoDB
 
 1. Install MongoDB locally
 2. Start MongoDB service
-3. Create `.env` file with the connection string
+3. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+4. Edit `.env` and configure your MongoDB connection string
 
-### Setup Steps
+### Setup Steps (Alternative Method)
 
-1. Copy the content above
-2. Create a new file named `.env` in the `backend/` directory
+If you prefer to create `.env` manually instead of using `.env.example`:
+
+1. Create a new file named `.env` in the `backend/` directory
+2. Copy the content from the "Manual Setup" section above
 3. Paste the content
 4. Replace the placeholder values:
    - `MONGODB_URI` - Your MongoDB connection string
+     - Docker: `mongodb://localhost:27017/dcuk-assessment`
      - Local: `mongodb://localhost:27017/dcuk-assessment`
      - Atlas: `mongodb+srv://username:password@cluster.mongodb.net/dcuk-assessment`
-   - `your_super_secret_jwt_key_change_in_production` - A random secret string (use a strong random string)
-   - `YOUR_INFURA_KEY` - Your Infura API key (optional, for Web3 RPC)
+   - `JWT_SECRET` - A random secret string (use a strong random string)
+   - `WEB3_PROVIDER_URL` - Your Web3 RPC provider URL (optional)
+     - Infura: `https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID`
+     - Public: `https://rpc.sepolia.org` or `https://eth.llamarpc.com`
    - `PRIVY_APP_ID` and `PRIVY_APP_SECRET` - Get these from https://dashboard.privy.io after creating an account
 
 ## Quick Setup
@@ -88,20 +116,18 @@ PRIVY_APP_SECRET=your_privy_app_secret_here
    docker compose up -d mongodb
    ```
 
-3. Create `.env` file in `backend/` directory:
+3. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
 
-```env
-PORT=5000
-NODE_ENV=development
-MONGODB_URI=mongodb://localhost:27017/dcuk-assessment
-JWT_SECRET=dev_secret_key_12345
-JWT_EXPIRES_IN=7d
-FRONTEND_URL=http://localhost:3012
-PRIVY_APP_ID=your_privy_app_id_here
-PRIVY_APP_SECRET=your_privy_app_secret_here
-```
+4. Edit `.env` and replace placeholder values:
+   - Replace `your_privy_app_id_here` with your Privy App ID
+   - Replace `your_privy_app_secret_here` with your Privy App Secret
+   - Replace `your_super_secret_jwt_key_change_in_production` with a strong random string
+   - Optionally configure `WEB3_PROVIDER_URL` for transaction monitoring
 
-4. Stop MongoDB container when done:
+5. Stop MongoDB container when done:
    ```bash
    docker compose down
    ```
@@ -136,7 +162,9 @@ For local development with MongoDB installed locally, use the same `.env` config
    - Go to "Login Methods" → "Google"
    - Ensure "Google OAuth" is enabled
    - Verify all URLs match exactly
-7. Copy your App ID and App Secret to the `.env` file
+7. Copy your App ID and App Secret to the `.env` file:
+   - `PRIVY_APP_ID` - Your Privy App ID
+   - `PRIVY_APP_SECRET` - Your Privy App Secret
 
 ### Troubleshooting Google OAuth
 
