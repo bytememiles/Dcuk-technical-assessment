@@ -65,10 +65,19 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
     try {
-      await axios.post('/api/cart/clear');
+      // Clear local state immediately (synchronously)
       setItems([]);
+
+      // Try to clear on backend (fire and forget - don't wait)
+      // This will fail silently if user is already logged out, which is fine
+      axios.post('/api/cart/clear').catch(() => {
+        // Silently fail - user might already be logged out
+      });
+
       return { success: true };
     } catch (error) {
+      // Even if there's an error, clear local state
+      setItems([]);
       return {
         success: false,
         error: error.response?.data?.error || 'Failed to clear cart',

@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }) => {
           // privyLogout();
         }
       } else {
-        // Not authenticated, clear user state
+        // Not authenticated, clear user state immediately
         setUser(null);
         setToken(null);
         localStorage.removeItem('token');
@@ -127,12 +127,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Clear state immediately (synchronously)
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
-    privyLogout();
+
+    // Logout from Privy (async but don't wait)
+    privyLogout().catch(error => {
+      console.error('Privy logout error:', error);
+    });
   };
 
   // Legacy methods for backward compatibility (not used with Privy)

@@ -26,6 +26,7 @@ import Orders from './pages/Orders';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import PrivateRoute from './components/PrivateRoute';
+import PublicRoute from './components/PublicRoute';
 
 // Navigation tracker component
 const NavigationTracker = () => {
@@ -106,11 +107,44 @@ function App() {
                 <Navbar />
                 <main className="container mx-auto px-4 py-8">
                   <Routes>
+                    {/* Public route - only accessible in guest mode */}
                     <Route path="/" element={<Home />} />
-                    <Route path="/marketplace" element={<Marketplace />} />
-                    <Route path="/nft/:id" element={<NFTDetail />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
+
+                    {/* Public routes - redirect to home if authenticated */}
+                    <Route
+                      path="/login"
+                      element={
+                        <PublicRoute>
+                          <Login />
+                        </PublicRoute>
+                      }
+                    />
+                    <Route
+                      path="/register"
+                      element={
+                        <PublicRoute>
+                          <Register />
+                        </PublicRoute>
+                      }
+                    />
+
+                    {/* Protected routes - require authentication */}
+                    <Route
+                      path="/marketplace"
+                      element={
+                        <PrivateRoute>
+                          <Marketplace />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/nft/:id"
+                      element={
+                        <PrivateRoute>
+                          <NFTDetail />
+                        </PrivateRoute>
+                      }
+                    />
                     <Route
                       path="/cart"
                       element={
@@ -135,6 +169,8 @@ function App() {
                         </PrivateRoute>
                       }
                     />
+
+                    {/* Catch all - redirect to home */}
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </main>

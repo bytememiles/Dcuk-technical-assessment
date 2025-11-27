@@ -98,9 +98,11 @@ export const Web3Provider = ({ children }) => {
   };
 
   const disconnect = () => {
+    // Clear state immediately
     setAccount(null);
     setProvider(null);
     setSigner(null);
+    setIsConnecting(false);
   };
 
   const signMessage = async message => {

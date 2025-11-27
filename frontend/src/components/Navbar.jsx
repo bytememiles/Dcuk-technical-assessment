@@ -3,15 +3,16 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWeb3 } from '../contexts/Web3Context';
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
-  const { totalItems } = useCart();
+  const { totalItems, clearCart } = useCart();
   const { account, connectWallet, isConnected, disconnect } = useWeb3();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isWalletMenuOpen, setIsWalletMenuOpen] = useState(false);
@@ -47,9 +48,23 @@ const Navbar = () => {
   }, [isWalletMenuOpen]);
 
   const handleLogout = () => {
+    // Disconnect wallet immediately (synchronous)
+    disconnect();
+
+    // Clear cart immediately (synchronous state update)
+    clearCart();
+
+    // Logout (clears auth state synchronously)
     logout();
-    disconnect(); // Disconnect wallet on logout
+
+    // Close menus
     setIsMenuOpen(false);
+    setIsWalletMenuOpen(false);
+
+    // Navigate to home immediately
+    navigate('/', { replace: true });
+
+    toast.success('Logged out successfully');
   };
 
   const handleDisconnectWallet = () => {
@@ -98,12 +113,14 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-4">
-            <Link
-              to="/marketplace"
-              className="text-gray-700 hover:text-purple-600 transition-colors"
-            >
-              Marketplace
-            </Link>
+            {isAuthenticated && (
+              <Link
+                to="/marketplace"
+                className="text-gray-700 hover:text-purple-600 transition-colors"
+              >
+                Marketplace
+              </Link>
+            )}
 
             {isAuthenticated ? (
               <>
@@ -327,13 +344,15 @@ const Navbar = () => {
           {/* Drawer Content */}
           <div className="flex-1 overflow-y-auto p-4">
             <div className="flex flex-col space-y-4">
-              <Link
-                to="/marketplace"
-                className="text-gray-700 hover:text-purple-600 transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 text-center"
-                onClick={closeMenu}
-              >
-                Marketplace
-              </Link>
+              {isAuthenticated && (
+                <Link
+                  to="/marketplace"
+                  className="text-gray-700 hover:text-purple-600 transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 text-center"
+                  onClick={closeMenu}
+                >
+                  Marketplace
+                </Link>
+              )}
 
               {isAuthenticated ? (
                 <>
