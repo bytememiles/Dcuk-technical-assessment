@@ -13,12 +13,19 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/database');
+const transactionMonitor = require('./services/transactionMonitor');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB
 connectDB();
+
+// Initialize transaction monitor
+if (process.env.WEB3_PROVIDER_URL) {
+  transactionMonitor.initialize(process.env.WEB3_PROVIDER_URL);
+  console.log('Transaction monitor initialized');
+}
 
 // Middleware
 app.use(

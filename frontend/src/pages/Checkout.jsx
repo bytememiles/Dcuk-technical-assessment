@@ -14,11 +14,17 @@ import BackButton from '../components/BackButton';
 const Checkout = () => {
   const navigate = useNavigate();
   const { items, totalPrice, clearCart } = useCart();
-  const { account, isConnected, connectWallet, verifyOwnership } = useWeb3();
+  const { account, isConnected, connectWallet, verifyOwnership, signer } =
+    useWeb3();
   const { user } = useAuth();
   const [verifying, setVerifying] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [verified, setVerified] = useState(false);
+
+  // Calculate fees (2.5% platform fee)
+  const subtotal = totalPrice;
+  const fee = subtotal * 0.025;
+  const finalTotal = subtotal + fee;
 
   useEffect(() => {
     if (items.length === 0) {
@@ -53,15 +59,52 @@ const Checkout = () => {
       return;
     }
 
+    if (!isConnected || !signer) {
+      toast.error('Wallet not connected');
+      return;
+    }
+
     setPlacingOrder(true);
     try {
+      // In a real application, this would interact with a smart contract
+      // For this demo, we'll simulate a transaction by creating a signed message
+      // that represents the order commitment
+      const orderMessage = `Order: ${items.length} items, Total: ${finalTotal.toFixed(4)} ETH`;
+      let transactionHash = null;
+
+      try {
+        // Simulate transaction: In production, this would be an actual contract call
+        // For demo purposes, we'll create a transaction hash from a signed message
+        const signature = await signer.signMessage(orderMessage);
+
+        // In production, you would:
+        // 1. Call a smart contract function to transfer funds
+        // 2. Get the transaction hash from the contract call
+        // 3. Wait for transaction confirmation
+        // For now, we'll use a simulated hash based on the signature
+        transactionHash = `0x${signature.slice(0, 64)}...`;
+
+        toast.info('Transaction submitted. Processing order...');
+      } catch (txError) {
+        console.error('Transaction error:', txError);
+        if (txError.code === 4001) {
+          toast.error('Transaction rejected by user');
+          setPlacingOrder(false);
+          return;
+        }
+        throw txError;
+      }
+
+      // Create order with transaction hash
       const response = await axios.post('/api/orders', {
-        transaction_hash: null, // In real app, this would come from blockchain transaction
+        transaction_hash: transactionHash,
       });
 
       await clearCart();
-      toast.success('Order placed successfully!');
-      navigate(`/orders/${response.data.order.id}`);
+      toast.success(
+        'Order placed successfully! Transaction is being processed.'
+      );
+      navigate(`/orders/${response.data.order._id || response.data.order.id}`);
     } catch (error) {
       console.error('Failed to place order:', error);
       toast.error(error.response?.data?.error || 'Failed to place order');
@@ -91,10 +134,18 @@ const Checkout = () => {
             </span>
           </div>
         ))}
-        <div className="border-t pt-4 mt-4">
-          <div className="flex justify-between text-xl font-bold">
+        <div className="border-t pt-4 mt-4 space-y-2">
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Subtotal:</span>
+            <span>{subtotal.toFixed(4)} ETH</span>
+          </div>
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Platform Fee (2.5%):</span>
+            <span>{fee.toFixed(4)} ETH</span>
+          </div>
+          <div className="flex justify-between text-xl font-bold pt-2 border-t">
             <span>Total:</span>
-            <span className="text-purple-600">{totalPrice.toFixed(4)} ETH</span>
+            <span className="text-purple-600">{finalTotal.toFixed(4)} ETH</span>
           </div>
         </div>
       </div>

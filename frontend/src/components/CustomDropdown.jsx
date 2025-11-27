@@ -5,7 +5,14 @@
 
 import { useEffect, useRef } from 'react';
 
-const CustomDropdown = ({ value, onChange, options, isOpen, onToggle }) => {
+const CustomDropdown = ({
+  value,
+  onChange,
+  options,
+  isOpen,
+  onToggle,
+  className = '',
+}) => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -27,30 +34,28 @@ const CustomDropdown = ({ value, onChange, options, isOpen, onToggle }) => {
   const selectedOption = options.find(opt => opt.value === value) || options[0];
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className={`relative ${className}`} ref={dropdownRef}>
       <button
         type="button"
         onClick={() => onToggle(!isOpen)}
-        className="w-full sm:w-auto px-4 py-2.5 pr-10 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-purple-600 hover:border-gray-400 transition-all cursor-pointer appearance-none shadow-sm min-w-[140px] text-left flex items-center justify-between"
+        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-purple-600 hover:border-gray-400 transition-all cursor-pointer appearance-none shadow-sm text-left flex items-center justify-between"
       >
-        <span>{selectedOption.label}</span>
-        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-          <svg
-            className={`w-4 h-4 text-gray-500 transition-transform duration-300 ease-in-out ${
-              isOpen ? 'rotate-180' : 'rotate-0'
-            }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </div>
+        <span className="flex-1 truncate pr-2">{selectedOption.label}</span>
+        <svg
+          className={`w-4 h-4 text-gray-500 transition-transform duration-300 ease-in-out flex-shrink-0 ${
+            isOpen ? 'rotate-180' : 'rotate-0'
+          }`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
       </button>
 
       {isOpen && (
