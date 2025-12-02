@@ -4,12 +4,6 @@
 
 This is a full-stack NFT marketplace platform built with Node.js, React, and Web3 integration. A personal hobby project exploring modern web development, blockchain integration, and NFT marketplace functionality.
 
-## 🎯 Project Information
-
-**👉 Check out: [FEATURES.md](./ASSESSMENT.md)**
-
-The features document outlines all implemented functionality and capabilities.
-
 ## 🏗️ Project Structure
 
 ```
@@ -173,3 +167,4 @@ This is a personal hobby project. Feel free to explore and learn from it!
 ---
 
 **Happy coding! 🚀**
+
