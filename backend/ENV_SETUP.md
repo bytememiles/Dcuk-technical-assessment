@@ -20,13 +20,13 @@ NODE_ENV=development
 
 # MongoDB Connection
 # Option 1: Docker Container (Recommended for development)
-MONGODB_URI=mongodb://localhost:27017/dcuk-assessment
+MONGODB_URI=mongodb://localhost:27017/nft-marketplace
 
 # Option 2: Local MongoDB Installation
-# MONGODB_URI=mongodb://localhost:27017/dcuk-assessment
+# MONGODB_URI=mongodb://localhost:27017/nft-marketplace
 
 # Option 3: MongoDB Atlas (cloud)
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/dcuk-assessment?retryWrites=true&w=majority
+# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/nft-marketplace?retryWrites=true&w=majority
 
 # JWT Secret
 JWT_SECRET=your_super_secret_jwt_key_change_in_production
@@ -72,7 +72,7 @@ PRIVY_APP_SECRET=your_privy_app_secret_here
    cp .env.example .env
    ```
 5. Edit `.env` and replace placeholder values with your actual credentials
-6. The connection string `mongodb://localhost:27017/dcuk-assessment` will work with Docker
+6. The connection string `mongodb://localhost:27017/nft-marketplace` will work with Docker
 
 ### Using Local MongoDB
 
@@ -93,9 +93,9 @@ If you prefer to create `.env` manually instead of using `.env.example`:
 3. Paste the content
 4. Replace the placeholder values:
    - `MONGODB_URI` - Your MongoDB connection string
-     - Docker: `mongodb://localhost:27017/dcuk-assessment`
-     - Local: `mongodb://localhost:27017/dcuk-assessment`
-     - Atlas: `mongodb+srv://username:password@cluster.mongodb.net/dcuk-assessment`
+     - Docker: `mongodb://localhost:27017/nft-marketplace`
+     - Local: `mongodb://localhost:27017/nft-marketplace`
+     - Atlas: `mongodb+srv://username:password@cluster.mongodb.net/nft-marketplace`
    - `JWT_SECRET` - A random secret string (use a strong random string)
    - `WEB3_PROVIDER_URL` - Your Web3 RPC provider URL (optional)
      - Infura: `https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID`

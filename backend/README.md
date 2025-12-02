@@ -87,14 +87,14 @@ docker compose down
 
 1. Install MongoDB locally
 2. Start MongoDB service
-3. Use connection string: `mongodb://localhost:27017/dcuk-assessment`
+3. Use connection string: `mongodb://localhost:27017/nft-marketplace`
 
 ### Option 3: MongoDB Atlas (Cloud)
 
 1. Create free account at https://www.mongodb.com/cloud/atlas
 2. Create a cluster
 3. Get connection string
-4. Use: `mongodb+srv://username:password@cluster.mongodb.net/dcuk-assessment`
+4. Use: `mongodb+srv://username:password@cluster.mongodb.net/nft-marketplace`
 
 ## 📊 Database Scripts
 

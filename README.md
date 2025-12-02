@@ -1,22 +1,22 @@
-# NFT E-Commerce Platform - Developer Assessment
+# NFT E-Commerce Platform
 
 ## 📖 Overview
 
-This is a full-stack NFT marketplace platform built with Node.js, React, and Web3 integration. The project serves as an assessment for full-stack developers with NFT/blockchain experience.
+This is a full-stack NFT marketplace platform built with Node.js, React, and Web3 integration. A personal hobby project exploring modern web development, blockchain integration, and NFT marketplace functionality.
 
-## 🎯 Assessment Information
+## 🎯 Project Information
 
-**👉 Start here: [ASSESSMENT.md](./ASSESSMENT.md)**
+**👉 Check out: [FEATURES.md](./ASSESSMENT.md)**
 
-The assessment document contains all tasks, requirements, and submission guidelines.
+The features document outlines all implemented functionality and capabilities.
 
 ## 🏗️ Project Structure
 
 ```
-Dcuk/
+project/
 ├── backend/          # Node.js + Express API
 ├── frontend/         # React + Vite application
-├── ASSESSMENT.md     # Assessment tasks and guidelines
+├── ASSESSMENT.md     # Project features and capabilities
 └── README.md         # This file
 ```
 
@@ -35,7 +35,7 @@ Dcuk/
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd Dcuk
+   cd <repo>
    ```
 
 2. **Backend Setup**
@@ -101,7 +101,6 @@ Dcuk/
 
 ## 📚 Documentation
 
-- **[ASSESSMENT.md](./ASSESSMENT.md)** - Complete assessment tasks and requirements
 - **[backend/README.md](./backend/README.md)** - Backend setup and API documentation
 - **[frontend/README.md](./frontend/README.md)** - Frontend setup and tech stack
 - **[backend/ENV_SETUP.md](./backend/ENV_SETUP.md)** - Detailed environment variables configuration
@@ -129,14 +128,14 @@ Dcuk/
 
 ## 📋 Implemented Features
 
-### Task 1: Privy SSO Authentication ✅
+### Privy SSO Authentication ✅
 - Email authentication (TOTP codes)
 - Google OAuth integration
 - JWT token generation
 - User creation/retrieval
 - Wallet address extraction from Privy
 
-### Task 2: NFT Filtering, Sorting & Marketplace UI ✅
+### NFT Filtering, Sorting & Marketplace UI ✅
 - Advanced filtering (price range, owner, contract)
 - Sorting (price, date, name)
 - Pagination
@@ -144,7 +143,7 @@ Dcuk/
 - Loading states and error handling
 - Enhanced NFT cards with verification badges
 
-### Task 3: NFT Ownership Verification & Detail Page ✅
+### NFT Ownership Verification & Detail Page ✅
 - On-chain ownership verification
 - Signature verification with ethers.js
 - ERC-721 contract interaction
@@ -152,22 +151,13 @@ Dcuk/
 - Related NFTs section
 - Copy-to-clipboard functionality
 
-### Task 4: Order Processing with Blockchain ✅
+### Order Processing with Blockchain ✅
 - Order creation with unique IDs
 - Platform fee calculation (2.5%)
 - Transaction monitoring service
 - Order status management
 - Order history with filters (status, date range, sorting)
 - Pagination support
-
-## 🔐 Security Notes
-
-- Never commit `.env` files
-- Use strong JWT secrets in production
-- Validate all user inputs
-- Follow Web3 security best practices
-- Keep Privy credentials secure
-- Use environment variables for all sensitive data
 
 ## 🧪 Development Tools
 
@@ -176,17 +166,10 @@ Dcuk/
 - **lint-staged**: Pre-commit linting
 - **Docker Compose**: MongoDB containerization
 
-## 📞 Support
-
-For questions about the assessment:
-- Review the ASSESSMENT.md document
-- Check backend/ENV_SETUP.md for configuration help
-- Review code comments for implementation details
-
 ## 📄 License
 
-This project is for assessment purposes only.
+This is a personal hobby project. Feel free to explore and learn from it!
 
 ---
 
-**Good luck with your assessment! 🚀**
+**Happy coding! 🚀**
